@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {Image, Text, View} from "react-native";
+import {Image, View} from "react-native";
 import {SafeAreaView} from "react-native-safe-area-context";
 import {Header, Input} from "@rneui/base";
 // @ts-ignore
@@ -19,17 +19,19 @@ import Strings from "@res/strings";
 const Home = () => {
     const [tab, setTab] = useState(0);
     return (
-        <SafeAreaView>
+        <View>
             <View style={{
+                paddingLeft: 20,
+                paddingRight: 20,
                 backgroundColor: Colors.white,
-                paddingBottom: 0
+                paddingBottom: 0,
+                marginTop: 0,
+                paddingTop: 0
             }}>
                 <Header
-                    style={{
-                        maxHeight: 50,
-                    }}
                     containerStyle={{
                         height: 60,
+                        marginTop: 0,
                         marginBottom: 10
                     }}
                     backgroundColor={"transparent"}
@@ -38,31 +40,30 @@ const Home = () => {
                             display: "flex",
                             flexDirection: "row",
                             justifyContent: "space-around",
-                            width: 125,
+                            width: 100,
                             maxHeight: 50
-                        }}><Image source={Icon} style={{
-                            height: 50,
-                            width: 50
-                        }}/><ThemedText h3>{Strings.app_title}</ThemedText></View>
+                        }}>
+                            <Image source={Icon} style={{
+                                height: 40,
+                                width: 40
+                            }}/>
+                            <ThemedText h4>{Strings.app_title}</ThemedText>
+                        </View>
                     }
                     rightComponent={
                         <View style={{
                             maxHeight: 50,
                             display: "flex",
                             flexDirection: "row",
-                            justifyContent: "space-around",
-                            width: 125
+                            justifyContent: "space-between",
+                            width: 60,
                         }}>
                             <IconComponent style={{height: 50}} name={"notifications"}/>
                             <IconComponent style={{height: 50}} name={"menu"}/>
                         </View>
                     }
                 />
-                <View style={{
-                    display: "flex",
-                    paddingLeft: 20,
-                    paddingRight: 20
-                }}>
+                <View style={{display: "flex",}}>
                     <Input
                         placeholder={Strings.search_bar_search}
                         blurOnSubmit={true}
@@ -71,67 +72,56 @@ const Home = () => {
                             height: 50,
                             backgroundColor: Colors.grey.background
                         }}
-                        inputContainerStyle={{
-                            borderBottomWidth: 0
-                        }}
+                        inputContainerStyle={{borderBottomWidth: 0}}
                         leftIcon={{type: 'material', name: 'search'}}
-                        onChangeText={console.log}
                     />
                 </View>
                 <View style={{
                     display: "flex",
-                    paddingLeft: 20,
-                    paddingRight: 20,
                     borderBottomWidth: 1,
                     borderBottomColor: Colors.grey.background
                 }}>
                     <Tab
                         value={tab}
-                        containerStyle={{
-                            backgroundColor: Colors.white
-                        }}
-
+                        containerStyle={{backgroundColor: Colors.white}}
                         onChange={(e) => setTab(e)}
                         indicatorStyle={{
                             backgroundColor: Colors.tertiary,
                             height: 3,
                         }}
-                        variant="primary"
-                    >
-                        <Tab.Item
-                            title={Strings.missions}
-                            containerStyle={{backgroundColor: Colors.white}}
-                            titleStyle={{ fontSize: 12, color: Colors.black}}
-                        />
-                        <Tab.Item
-                            title={Strings.menu_calls}
-                            containerStyle={{backgroundColor: Colors.white}}
-                            titleStyle={{ fontSize: 12, color: Colors.black}}
-                        />
+                        variant="primary">
                         <Tab.Item
                             title={Strings.menu_chats}
                             containerStyle={{backgroundColor: Colors.white}}
-                            titleStyle={{ fontSize: 12, color: Colors.black}}
+                            titleStyle={{fontSize: 12, color: Colors.black}}
                         />
+                        <Tab.Item
+                            title={Strings.menu_missions}
+                            containerStyle={{backgroundColor: Colors.white}}
+                            titleStyle={{fontSize: 12, color: Colors.black}}
+                        />
+                        {/*<Tab.Item*/}
+                        {/*    title={Strings.menu_calls}*/}
+                        {/*    containerStyle={{backgroundColor: Colors.white}}*/}
+                        {/*    titleStyle={{fontSize: 12, color: Colors.black}}*/}
+                        {/*/>*/}
                     </Tab>
                 </View>
             </View>
-            <View style={{
-                height: '100%'
-            }}>
-                <TabView disableSwipe value={tab} onChange={setTab} animationType={"spring"}>
-                    <TabView.Item style={{ backgroundColor: 'transparent', width: '100%' }}>
-                        <Chats/>
+            <View style={{height: '100%'}}>
+                <TabView value={tab} onChange={setTab} animationType={"spring"}>
+                    <TabView.Item style={{backgroundColor: 'transparent', width: '100%'}}>
+                        <View><Chats/></View>
                     </TabView.Item>
-                    <TabView.Item style={{ backgroundColor: 'transparent', width: '100%' }}>
-                        <Missions/>
+                    <TabView.Item style={{backgroundColor: 'transparent', width: '100%'}}>
+                        <View><Missions/></View>
                     </TabView.Item>
-                    <TabView.Item style={{ backgroundColor: 'transparent', width: '100%' }}>
-                        <Calls/>
-                    </TabView.Item>
+                    {/*<TabView.Item style={{backgroundColor: 'transparent', width: '100%'}}>*/}
+                    {/*    <View><Calls/></View>*/}
+                    {/*</TabView.Item>*/}
                 </TabView>
             </View>
-        </SafeAreaView>
+        </View>
     );
 }
 

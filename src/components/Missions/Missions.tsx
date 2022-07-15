@@ -1,17 +1,10 @@
 import React, {FC} from 'react';
-import {
-    FlatList,
-    Text,
-    View,
-    Button as ButtonNative,
-    TouchableNativeFeedback,
-    TouchableHighlight,
-    TouchableOpacity, TouchableOpacityComponent
-} from "react-native";
-import {Avatar, ListItem, Tab} from "@rneui/themed";
-import Colors from "../../res/colors";
-import {Button, Icon} from "@rneui/base";
-
+import {Image, View} from "react-native";
+import {Avatar, ListItem, Tab, TabView} from "@rneui/themed";
+import Colors from "@res/colors";
+import {Button} from "@rneui/base";
+import ChevronLeft from "@assets/chevron_left_FILL0_wght400_GRAD0_opsz48.png";
+import ChevronRight from "@assets/chevron_right_FILL0_wght400_GRAD0_opsz48.png";
 
 interface MissionsProps {
 }
@@ -36,23 +29,29 @@ const chats = [
         subtitle: 'Vice Chairman'
     },
 ]
+const shuffleArray = unshuffled => unshuffled
+    .map(value => ({value, sort: Math.random()}))
+    .sort((a, b) => a.sort - b.sort)
+    .map(({value}) => value);
+
 const Missions: FC<MissionsProps> = () => {
     const [tab, setTab] = React.useState(0);
     return (
-        <View style={{
-            height: '100%'
-        }}>
+        <View style={{height: '100%'}}>
             <View style={{
                 display: "flex",
                 flexDirection: "row",
                 justifyContent: "center",
-                paddingLeft: 0,
-                paddingRight: 0
+                width: "100%",
+                paddingLeft: 20,
+                paddingRight: 20
             }}>
-                <Button disabled={tab === 0} onPress={() => setTab(tab -1)} style={{
-                    left: 0,
-                    backgroundColor: "transparent"
-                }}><ListItem.Chevron underlayColor={"transparent"}/></Button>
+                <Button disabled={tab === 0} color={"transparent"} onPress={() => setTab(tab - 1)}>
+                    <Image source={ChevronLeft} style={{
+                        width: 25,
+                        height: 25
+                    }}/>
+                </Button>
                 <View style={{
                     display: "flex",
                     flexDirection: "row",
@@ -63,42 +62,49 @@ const Missions: FC<MissionsProps> = () => {
                     <Tab
                         scrollable={true}
                         value={tab}
-                        containerStyle={{
-                            backgroundColor: Colors.white
-                        }}
-
+                        containerStyle={{backgroundColor: "transparent"}}
                         onChange={(e) => setTab(e)}
                         indicatorStyle={{
                             backgroundColor: Colors.primary,
                             height: 3,
                         }}
-                        variant="primary"
-                    >{missions.map(mission => <Tab.Item
-                        title={mission.title}
-                        key={Math.random()}
-                        variant={"primary"}
-                        containerStyle={{backgroundColor: Colors.white}}
-                        titleStyle={{fontSize: 12, color: Colors.black}}
-                    />)}
+                        variant="primary">
+                        {missions.map(mission => (
+                            <Tab.Item
+                                title={mission.title}
+                                key={Math.random()}
+                                variant={"primary"}
+                                containerStyle={{backgroundColor: "transparent"}}
+                                titleStyle={{fontSize: 12, color: Colors.black}}
+                            />
+                        ))}
                     </Tab>
                 </View>
-                <Button disabled={tab === missions.length -1} onPress={() => setTab(tab + 1)} style={{
-                    right: 0,
-                    backgroundColor: "transparent"
-                }}><ListItem.Chevron /></Button>
+                <Button disabled={tab === missions.length - 1} color={"transparent"} onPress={() => setTab(tab + 1)}>
+                    <Image source={ChevronRight} style={{
+                        width: 25,
+                        height: 25
+                    }}/>
+                </Button>
             </View>
-            <View>
-                <FlatList data={chats} renderItem={({item}) => (
-                    <ListItem bottomDivider focusable>
-                        <Avatar source={{uri: item.avatar_url}} />
-                        <ListItem.Content>
-                            <ListItem.Title>{item.name}</ListItem.Title>
-                            <ListItem.Subtitle>{item.subtitle}</ListItem.Subtitle>
-                        </ListItem.Content>
-                        <ListItem.Chevron />
-                    </ListItem>
-                )}/>
-            </View>
+            <TabView value={tab} onChange={setTab} animationType={"spring"}>
+                {missions.map(() => (
+                    <TabView.Item key={Math.random()} style={{backgroundColor: 'transparent', width: '100%'}}>
+                        <View>
+                            {shuffleArray(chats).map((item: { avatar_url: any; name: boolean | React.ReactChild | React.ReactFragment | React.ReactPortal | null | undefined; subtitle: boolean | React.ReactChild | React.ReactFragment | React.ReactPortal | null | undefined; }) => (
+                                <ListItem key={Math.random()} bottomDivider focusable>
+                                    <Avatar source={{uri: item.avatar_url}}/>
+                                    <ListItem.Content>
+                                        <ListItem.Title>{item.name}</ListItem.Title>
+                                        <ListItem.Subtitle>{item.subtitle}</ListItem.Subtitle>
+                                    </ListItem.Content>
+                                    <ListItem.Chevron/>
+                                </ListItem>
+                            ))}
+                        </View>
+                    </TabView.Item>
+                ))}
+            </TabView>
         </View>
     );
 }

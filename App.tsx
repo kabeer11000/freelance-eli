@@ -9,6 +9,7 @@ import Chat from "./src/components/Chat/Chat";
 import {AuthProvider} from "./Contexts";
 import Login from "./src/views/Login/Login";
 import {createTheme, ThemeProvider} from "@rneui/themed";
+import VideoSDKWebView from "./src/components/VideoSDKWebView/VideoSDKWebView";
 
 export const Stack = createNativeStackNavigator();
 
@@ -62,8 +63,8 @@ export default function App() {
             <NavigationContainer onReady={onLayoutRootView}>
                 <AuthProvider>
                     <ThemeProvider theme={theme}>
-                        <SafeAreaView style={{flex: 1, backgroundColor: "#fff", minHeight: '100%', width: '100%'}}>
-                            <Stack.Navigator initialRouteName={"Login"} screenOptions={{
+                        <SafeAreaView style={{ backgroundColor: "#fff", minHeight: '100%', width: '100%'}}>
+                            <Stack.Navigator initialRouteName={"Home"} screenOptions={{
                                 headerShown: false
                             }} defaultScreenOptions={{
                                 headerShown: false
@@ -77,6 +78,7 @@ export default function App() {
                                     remoteUserId: "f02a76c5-9c98-4268-83e0-3069fbe9b0a7"
                                 }} component={Chat}/>
                                 <Stack.Screen name={"Login"} component={Login}/>
+                                <Stack.Screen name={"VideoSDK"} component={VideoSDKWebView}/>
                             </Stack.Navigator>
                         </SafeAreaView>
                     </ThemeProvider>

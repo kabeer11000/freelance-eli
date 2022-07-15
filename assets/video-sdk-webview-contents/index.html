@@ -1,0 +1,63 @@
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script type="module">
+    const searchParams = new URLSearchParams(window.location.search);
+    const apiKey = searchParams.get("api_key")
+    const meetingId = searchParams.get("meeting_id")
+    const name = searchParams.get("name")
+    const redirectOnLeave = searchParams.get("redirect_on_leave");
+</script>
+<script>
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+
+    script.addEventListener("load", function (event) {
+        const meeting = new VideoSDKMeeting();
+
+        const config = {
+            name: "Kabeer Test",
+            apiKey: "0b360177-d459-4975-b383-aaa65c4a1698",
+            meetingId: "VIRTUAL_EVENT_DEMO",
+            redirectOnLeave: "about:blank",
+            micEnabled: true,
+            webcamEnabled: true,
+            participantCanToggleSelfWebcam: true,
+            participantCanToggleSelfMic: true,
+            branding: {
+                enabled: true,
+                name: "Biz1",
+                poweredBy: false,
+            },
+            joinScreen: {
+                visible: true, // Show the join screen ?
+                title: "Virtual Events Quick Start", // Meeting title
+                meetingUrl: null, // window.location.href, // Meeting joining url
+            },
+        };
+
+        meeting.init(config);
+    });
+
+    script.src =
+        "https://sdk.videosdk.live/rtc-js-prebuilt/0.3.1/rtc-js-prebuilt.js";
+
+    document.getElementsByTagName("head")[0].appendChild(script);
+</script>
+<script>
+    document.onerror = () => window.document.write("error")
+    window.onbeforeunload = function (e) {
+        // var e = e || window.event;
+
+        // For IE and Firefox prior to version 4
+        // if (e) {
+        //     e.returnValue = 'Are you sure you want to leave the site?';
+        // }
+        //
+        // For Safari
+        window.ReactNativeWebView.postMessage("MEETING_ENDED")
+    };
+</script>
+<style>
+    *{
+        background-color: black !important;
+    }
+</style>
