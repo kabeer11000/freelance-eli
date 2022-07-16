@@ -1,10 +1,12 @@
-import React, {FC} from 'react';
+import React, {FC, useContext, useEffect, useState} from 'react';
 import {Image, View} from "react-native";
 import {Avatar, ListItem, Tab, TabView} from "@rneui/themed";
 import Colors from "@res/colors";
 import {Button} from "@rneui/base";
 import ChevronLeft from "@assets/chevron_left_FILL0_wght400_GRAD0_opsz48.png";
 import ChevronRight from "@assets/chevron_right_FILL0_wght400_GRAD0_opsz48.png";
+import {ChatContext} from "../../../Contexts";
+import {IChat} from "../../../Types";
 
 interface MissionsProps {
 }
@@ -36,6 +38,13 @@ const shuffleArray = unshuffled => unshuffled
 
 const Missions: FC<MissionsProps> = () => {
     const [tab, setTab] = React.useState(0);
+    const chats = useContext(ChatContext);
+    const [projects, setProjects] = useState<{[key: string]: Array<IChat>} | null>(null);
+    useEffect(() => {
+        if (!chats?.data) return;
+        const projectsUnique = [...new Set(chats.data.map((chat, index) => chat.project_id))];
+        setProjects(Object.fromEntries(projectsUnique.map(projectId => [projectId, chats.data.filter(chat => chat.project_id === projectId)])));
+    }, [chats])
     return (
         <View style={{height: '100%'}}>
             <View style={{

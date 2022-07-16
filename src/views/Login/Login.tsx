@@ -7,6 +7,7 @@ import {Button, CheckBox, Icon, Input} from "@rneui/base";
 import Colors from "@res/colors"
 import {ListItemCheckBox} from "@rneui/base/dist/ListItem/ListItem.CheckBox";
 import {AuthContext} from "../../../Contexts";
+import {useLinkTo, useNavigation} from "@react-navigation/native";
 
 interface LoginProps {
     version: string,
@@ -17,7 +18,9 @@ interface LoginProps {
 const LoginComponent: FC<LoginProps> = () => {
     const [checkBox, setCheckBox] = React.useState(true);
     const [creds, setCreds] = React.useState({username: "", password: ""});
+    const [error, setError] = React.useState(false);
     const {Login} = useContext(AuthContext);
+    const navigation = useNavigation();
     return (
         <View style={{
             backgroundColor: "white"
@@ -54,7 +57,8 @@ const LoginComponent: FC<LoginProps> = () => {
                         <Input
                             value={creds.username}
                             blurOnSubmit={true}
-                            errorMessage={"Username or Password Incorrect"}
+                            errorMessage={error ? "Username or Password Incorrect" : ""}
+                            renderErrorMessage={error}
                             containerStyle={{
                                 borderRadius: 10,
                                 height: 50,
@@ -75,7 +79,9 @@ const LoginComponent: FC<LoginProps> = () => {
                             marginBottom: 10
                         }}>{Strings.login_screen_password}</Text>
                         <Input
-                            errorMessage={"Username or Password Incorrect"}
+
+                            errorMessage={error ? "Username or Password Incorrect" : ""}
+                            renderErrorMessage={error}
                             blurOnSubmit={true}
                             value={creds.password}
                             containerStyle={{
@@ -122,11 +128,17 @@ const LoginComponent: FC<LoginProps> = () => {
                         <Button containerStyle={{
                             borderRadius: 10
                         }} onPress={async () => {
-                            await Login({
-                                username: creds.username,
-                                password: creds.password,
-                                rememberMe: checkBox,
-                            }).catch(e => e);
+                            try {
+                                await Login({
+                                    username: creds.username,
+                                    password: creds.password,
+                                    rememberMe: checkBox,
+                                });
+                                navigation.navigate("Home");
+                            } catch (e) {
+                                console.log("error", e)
+                                setError(true);
+                            }
                         }} color={Colors.tertiary}>Login</Button>
                     </View>
                     {/*<Text>{Strings.login_screen_remember_me}</Text><CheckBox checked={false}></CheckBox>*/}
