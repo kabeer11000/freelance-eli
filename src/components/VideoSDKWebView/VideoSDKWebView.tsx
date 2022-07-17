@@ -5,7 +5,6 @@ import {useLinkTo} from "@react-navigation/native";
 import {Text} from "@rneui/base";
 import {ActivityIndicator, BackHandler, View} from "react-native";
 import {Camera} from "expo-camera";
-import {SafeAreaView} from "react-native-safe-area-context";
 // import RNFS from 'react-native-fs';
 // let path = RNFS.MainBundlePath + '/www';
 
@@ -70,7 +69,7 @@ const VideoSDKWebView: FC<VideoSDKWebViewProps> = ({route}) => {
     }}><Text h2>This meeting has ended</Text></View>;
     console.log(`https://docs.kabeercloud.tk/tests/freelance-project-videosdk/index.html?api_key=${api_key}&meeting_id=${meeting_id}&name=${name}`)
     return (
-        <SafeAreaView><WebView
+        <WebView
             mixedContentMode={"always"}
             bounces={true}
             allowsInlineMediaPlayback
@@ -81,15 +80,11 @@ const VideoSDKWebView: FC<VideoSDKWebViewProps> = ({route}) => {
             javaScriptEnabledAndroid
             useWebkit
             startInLoadingState={true}
-            renderLoading={Spinner}
+            // renderLoading={Spinner}
             javaScriptCanOpenWindowsAutomatically={true}
             style={{
                 width: "100%",
                 height: "100%"
-            }}
-
-            onLoad={() => {
-                console.log("webview loaded")
             }}
             onMessage={(e: { nativeEvent: { data?: string } }) => {
                 if (e.nativeEvent.data === "MEETING_ENDED") {
@@ -99,7 +94,7 @@ const VideoSDKWebView: FC<VideoSDKWebViewProps> = ({route}) => {
             }}
             originWhitelist={['*']}
             source={{uri: `https://docs.kabeercloud.tk/tests/freelance-project-videosdk/index.html?api_key=${api_key}&meeting_id=${meeting_id}&name=${name}`}}
-        /></SafeAreaView>
+        />
     );
 }
 
