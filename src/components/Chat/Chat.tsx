@@ -1,11 +1,10 @@
-import React, {useCallback, useContext, useEffect, useState} from 'react'
-import {GiftedChat} from 'react-native-gifted-chat'
-import {io} from "socket.io-client";
-import {AuthContext} from "../../../Contexts";
-import {v4} from "uuid";
-import {Input} from "@rneui/base"
-import {SafeAreaView} from "react-native-safe-area-context";
+import React, {useContext, useEffect, useState} from 'react'
+import {Bubble, GiftedChat} from 'react-native-gifted-chat'
+import {ActiveChatContext, AuthContext} from "../../../Contexts";
+import {Button, Input, Text} from "@rneui/base"
 import {View} from "react-native";
+import Colors from "../../res/colors";
+import {Avatar} from "@rneui/themed";
 
 // const socket = io("ws://192.168.10.2:3001");
 // console.log(socket);
@@ -14,58 +13,125 @@ const ThemedInput = () => {
     return <Input/>
 }
 
-export function Example({remoteUserId}) {
-    if (!remoteUserId) remoteUserId = "f02a76c5-9c98-4268-83e0-3069fbe9b0a7"
-    console.log(remoteUserId)
-    const [messages, setMessages] = useState([]);
-    const [text, setText] = useState("text");
-    const LoadInitialChat = async ({remoteUserId, userId}) => {
-        console.log(`http://localhost:3000/chats/get/${userId}/${remoteUserId}`)
-        const _chats = await (await fetch(`http://192.168.10.2:3000/chats/get/${userId}/${remoteUserId}`)).json();
-        console.log(_chats)
-        setMessages(_chats)
-    }
-    const {user} = useContext(AuthContext);
+export function ConversationView({navigation}) {
+    const {Auth} = useContext(AuthContext);
+    const {chat} = useContext(ActiveChatContext);
+    const [text, setText] = useState("");
+    const [user, setUser] = useState<{ id: string; user_name: string; name: string; profile_image: string; } | undefined>(undefined);
     useEffect(() => {
-        LoadInitialChat({userId: user.id, remoteUserId});
-        // socket.on("message", ({message, remoteUser, user}) => {
-        //     if (remoteUser === user.id) {
-        //     @ts-ignore
-            // setMessages([...messages, message]);
-            // }
-        // })
-    }, [])
-    const onSend = useCallback((messages = []) => {
-        // setMessages(previousMessages => GiftedChat.append(previousMessages, messages));
-        // socketio server will emit message to  everyone including me :)
-        console.log(user, remoteUserId)
-        // console.log("messages: ", messages)
-        // socket.emit("send-message", {message: {...messages.at(-1), user: {
-        //             _id: user.id,
-        //             name: user.name
-        //         }}, user: user.id, remoteUser: remoteUserId});
-    }, [])
-
+        Auth && chat?.status ? setUser(Auth.team_members.find(user => user.id === Object.keys(chat.data.users)[0])) : null;
+    }, [chat]); // Reloads with active chat
+    console.log(!!Auth, !!chat, !!user);
     return (
-        <SafeAreaView>
-            <View style={{
-                height: "100%"
+        <View>
+            {Auth && chat?.status && user ? <View style={{
+                height: "100%",
+                // flex: 1
             }}>
+                <View style={{
+                    display: "flex",
+                    backgroundColor: Colors.white,
+                    width: "100%",
+                    position: "absolute",
+                    height: 60,
+                    zIndex: 999,
+                    top: 0,
+                    paddingTop: 10,
+                    justifyContent: "space-between",
+                    flexDirection: "row"
+                }}>
+                    <View style={{
+                        display: "flex",
+                        width: "50%",
+                        justifyContent: "space-between",
+                        flexDirection: "row"
+                    }}>
+                        <Button onPress={() => {
+                            navigation.goBack()
+                        }} icon={{
+                            name: "arrow-back"
+                        }} containerStyle={{
+                            width: 50, height: 50,
+                            backgroundColor: "transparent"
+                        }} color={"transparent"}/>
+                        <Avatar rounded source={{uri: user.profile_image}}/>
+                        <Text style={{
+                            fontSize: 20,
+                            fontWeight: "bold",
+                            textAlign: "center",
+                        }}>{user?.name}</Text>
+                    </View>
+                    <View style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        flexDirection: "row"
+                    }}>
+                        <Button icon={{
+                            name: "videocam"
+                        }} containerStyle={{
+                            width: 50, height: 50,
+                            backgroundColor: "transparent"
+                        }} color={"transparent"}/>
+                        <Button onPress={() => {
+                            navigation.navigate("VideoSDK", {
+                                api_key: "0b360177-d459-4975-b383-aaa65c4a1698",
+                                meeting_id: chat?.data.id,
+                                name: Auth?.user_name
+                            });
+                        }} icon={{
+                            name: "call"
+                        }} containerStyle={{
+                            width: 50, height: 50,
+                            backgroundColor: "transparent"
+                        }} color={"transparent"}/>
+                    </View>
+                </View>
                 <GiftedChat
-                    messages={messages}
+                    messagesContainerStyle={{
+                        marginTop: 25
+                    }}
+                    renderUsernameOnMessage={true}
+                    renderBubble={props => {
+                        return (
+                            <Bubble
+                                {...props}
+                                textStyle={{
+                                    color: "white"
+                                }}
+                                wrapperStyle={{
+                                    left: {
+                                        backgroundColor: Colors.tertiary,
+                                    },
+                                }}
+                            />
+                        );
+                    }}
+                    messages={chat.data.messages.map(message => {
+                        return ({
+                            _id: Math.random(),
+                            text: message.message,
+                            createdAt: new Date(message.time),
+                            user: {
+                                _id: user.id,
+                                name: user.name,
+                                avatar: user.profile_image,
+                            },
+                        })
+                    })}
                     text={text}
                     alwaysShowSend
                     onInputTextChanged={_text => setText(_text)}
-                    onSend={messages => onSend(messages)}
+                    onSend={messages => {
+                    }}
                     user={{
-                        _id: user.id,
-                        name: user.name
+                        _id: Auth?.id,
+                        name: Auth?.user_name,
                     }}
                 />
-            </View>
-        </SafeAreaView>
+            </View> : <Text>"null"</Text>}
+        </View>
 
     )
 }
 
-export default Example
+export default ConversationView

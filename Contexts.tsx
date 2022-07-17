@@ -1,7 +1,7 @@
 import React, {createContext, useContext, useEffect, useState} from "react";
 import * as SecureStore from 'expo-secure-store';
 import EndPoints from "./src/api/EndPointsMock";
-import {createNavigationContainerRef, useLinkTo} from "@react-navigation/native";
+import {useLinkTo} from "@react-navigation/native";
 import {ActivityIndicator} from "react-native";
 import {IAuthContextObject, IChat, ILoginFunctionInterface, LoginFunction} from "./Types";
 
@@ -12,7 +12,8 @@ export const AuthContext = createContext<{
 }>({
     Auth: null,
     savedCredentials: null,
-    Login: async (a: ILoginFunctionInterface) => {},
+    Login: async (a: ILoginFunctionInterface) => {
+    },
 }); // Login will be overridden
 export const AuthProvider = ({children}: { children: React.ReactChildren | React.ReactNode }) => {
     const [Auth, setAuth]: [IAuthContextObject | null | undefined, any] = useState();
@@ -59,9 +60,9 @@ export const AuthContextWrapper = ({isReady, children}: { isReady: boolean, chil
     } else return <React.Fragment><ActivityIndicator/></React.Fragment>;
 }
 
-export const ChatContext = createContext<{status: boolean, data: Array<IChat>} | null>(null);
+export const ChatContext = createContext<{ status: boolean, data: Array<IChat> } | null>(null);
 export const ChatProvider = ({children}: { children: React.ReactChildren | React.ReactNode }) => {
-    const [state, setState] = useState<{status: boolean, data: Array<IChat>} | null>(null);
+    const [state, setState] = useState<{ status: boolean, data: Array<IChat> } | null>(null);
     const {Auth} = useContext(AuthContext);
     useEffect(() => {
         if (Auth?.token) fetch(EndPoints.GetChats({token: Auth.token}), {
@@ -73,6 +74,72 @@ export const ChatProvider = ({children}: { children: React.ReactChildren | React
         <ChatContext.Provider value={state}>{children}</ChatContext.Provider>
     )
 }
+type ISendMessage = ({text}: { text: string }) => Promise<void>;
+type ILoad = (chat: IChat) => Promise<void>;
+export const ActiveChatContext = createContext<{ Load: ILoad, SendMessage: ISendMessage, chat: {status: boolean, data: IChat} | null } | null>(null);
+export const ActiveChatProvider = ({children}: { children: React.ReactChildren | React.ReactNode }) => {
+    const [state, setState] = useState<{ status: boolean, data: IChat } | null>(null);
+    const {Auth} = useContext(AuthContext);
+    const abortController = new AbortController();
+    const SendMessage = async ({text}: { text: string }) => {
+        if (!state?.status || !Auth?.status) return;
+        const {
+            mission_id,
+            owner,
+            contactus_id,
+            cust_chat_id,
+            clientpro_cust_id,
+            invoice_id,
+            csv_id
+        } = state.data;
+        await fetch(EndPoints.SendMessage({
+            token: Auth.token,
+            message: text,
+            lang: Auth.app_lang,
+            mission_id,
+            owner,
+            contactus_id,
+            cust_chat_id,
+            clientpro_cust_id,
+            invoice_id,
+            csv_id,
+        }), {
+            method: 'GET',
+            redirect: 'follow'
+        }).then(res => res.ok ? res.json() : null);
+        setState({
+            // @ts-ignore
+            ...state, data: {
+                ...state.data, messages: [...state.data.messages, {
+                    "type": "text",
+                    "time": new Date().toString(),
+                    "message": text,
+                    "direction": "0",
+                }]
+            }
+        });
+    };
+    const Load: ILoad = async (chat: IChat) => {
+        if (Auth?.token) {
+            const res = await fetch(EndPoints.GetChat({token: Auth.token, id: chat.id}), {
+                method: 'GET',
+                redirect: 'follow',
+                signal: abortController.signal
+            }).then(res => res.ok ? res.json() : null);
+            console.log(res);
+            setState(res);
+        }
+    }
+    useEffect(() => {
+        return () => {
+            abortController.abort();
+        }
+    }, [])
+    return (
+        <ActiveChatContext.Provider value={{SendMessage, Load, chat: state}}>{children}</ActiveChatContext.Provider>
+    )
+}
+
 
 
 

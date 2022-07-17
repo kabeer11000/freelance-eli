@@ -7,6 +7,7 @@ import ChevronLeft from "@assets/chevron_left_FILL0_wght400_GRAD0_opsz48.png";
 import ChevronRight from "@assets/chevron_right_FILL0_wght400_GRAD0_opsz48.png";
 import {ChatContext} from "../../../Contexts";
 import {IChat} from "../../../Types";
+import ChatList from "../Chats/ChatList";
 
 interface MissionsProps {
 }
@@ -31,19 +32,22 @@ const chats = [
         subtitle: 'Vice Chairman'
     },
 ]
-const shuffleArray = unshuffled => unshuffled
-    .map(value => ({value, sort: Math.random()}))
-    .sort((a, b) => a.sort - b.sort)
-    .map(({value}) => value);
+// const shuffleArray = unshuffled => unshuffled
+//     .map(value => ({value, sort: Math.random()}))
+//     .sort((a, b) => a.sort - b.sort)
+//     .map(({value}) => value);
 
 const Missions: FC<MissionsProps> = () => {
     const [tab, setTab] = React.useState(0);
     const chats = useContext(ChatContext);
-    const [projects, setProjects] = useState<{[key: string]: Array<IChat>} | null>(null);
+    const [projects, setProjects] = useState<Array<{ projectId: string | number, chats: Array<IChat> }> | null>(null);
     useEffect(() => {
         if (!chats?.data) return;
         const projectsUnique = [...new Set(chats.data.map((chat, index) => chat.project_id))];
-        setProjects(Object.fromEntries(projectsUnique.map(projectId => [projectId, chats.data.filter(chat => chat.project_id === projectId)])));
+        setProjects(projectsUnique.map(projectId => ({
+            projectId: projectId,
+            chats: chats.data.filter(chat => chat.project_id === projectId)
+        })));
     }, [chats])
     return (
         <View style={{height: '100%'}}>
@@ -78,10 +82,10 @@ const Missions: FC<MissionsProps> = () => {
                             height: 3,
                         }}
                         variant="primary">
-                        {missions.map(mission => (
+                        {projects?.map(({projectId}) => (
                             <Tab.Item
-                                title={mission.title}
-                                key={Math.random()}
+                                title={`Project ${projectId}`}
+                                key={`project-${projectId}`}
                                 variant={"primary"}
                                 containerStyle={{backgroundColor: "transparent"}}
                                 titleStyle={{fontSize: 12, color: Colors.black}}
@@ -97,20 +101,9 @@ const Missions: FC<MissionsProps> = () => {
                 </Button>
             </View>
             <TabView value={tab} onChange={setTab} animationType={"spring"}>
-                {missions.map(() => (
-                    <TabView.Item key={Math.random()} style={{backgroundColor: 'transparent', width: '100%'}}>
-                        <View>
-                            {shuffleArray(chats).map((item: { avatar_url: any; name: boolean | React.ReactChild | React.ReactFragment | React.ReactPortal | null | undefined; subtitle: boolean | React.ReactChild | React.ReactFragment | React.ReactPortal | null | undefined; }) => (
-                                <ListItem key={Math.random()} bottomDivider focusable>
-                                    <Avatar source={{uri: item.avatar_url}}/>
-                                    <ListItem.Content>
-                                        <ListItem.Title>{item.name}</ListItem.Title>
-                                        <ListItem.Subtitle>{item.subtitle}</ListItem.Subtitle>
-                                    </ListItem.Content>
-                                    <ListItem.Chevron/>
-                                </ListItem>
-                            ))}
-                        </View>
+                {projects?.map(({projectId, chats}) => (
+                    <TabView.Item key={`project-${projectId}`} style={{backgroundColor: 'transparent', width: '100%'}}>
+                        <ChatList chats={chats}/>
                     </TabView.Item>
                 ))}
             </TabView>

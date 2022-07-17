@@ -1,4 +1,4 @@
-import {StyleSheet} from 'react-native';
+import {KeyboardAvoidingView, Platform, StyleSheet} from 'react-native';
 import React, {useCallback, useEffect, useState} from "react";
 import * as SplashScreen from 'expo-splash-screen';
 import {NavigationContainer} from "@react-navigation/native";
@@ -6,7 +6,7 @@ import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import Home from "@views/Home/Home";
 import {SafeAreaProvider, SafeAreaView} from "react-native-safe-area-context";
 import Chat from "./src/components/Chat/Chat";
-import {AuthProvider, ChatProvider} from "./Contexts";
+import {ActiveChatProvider, AuthProvider, ChatProvider} from "./Contexts";
 import Login from "./src/views/Login/Login";
 import {createTheme, ThemeProvider} from "@rneui/themed";
 import VideoSDKWebView from "./src/components/VideoSDKWebView/VideoSDKWebView";
@@ -64,19 +64,22 @@ export default function App() {
                     <SafeAreaView style={{backgroundColor: "#fff", minHeight: '100%', width: '100%'}}>
                         <AuthProvider>
                             <ChatProvider>
-                                <Stack.Navigator initialRouteName={"Home"} screenOptions={{
-                                    headerShown: false
-                                }} defaultScreenOptions={{headerShown: false}}>
-                                    <Stack.Screen name={"Home"} component={Home}/>
-                                    <Stack.Screen name={"Chat"} component={Chat}/>
-                                    <Stack.Screen name={"Login"} component={Login}/>
-                                    <Stack.Screen name={"VideoSDK"} component={VideoSDKWebView}/>
-                                </Stack.Navigator>
+                                <ActiveChatProvider>
+                                    <Stack.Navigator initialRouteName={"Home"} screenOptions={{
+                                        headerShown: false
+                                    }} defaultScreenOptions={{headerShown: false}}>
+                                        <Stack.Screen name={"Home"} component={Home}/>
+                                        <Stack.Screen name={"Chat"} component={Chat}/>
+                                        <Stack.Screen name={"Login"} component={Login}/>
+                                        <Stack.Screen name={"VideoSDK"} component={VideoSDKWebView}/>
+                                    </Stack.Navigator>
+                                </ActiveChatProvider>
                             </ChatProvider>
                         </AuthProvider>
                     </SafeAreaView>
                 </ThemeProvider>
             </NavigationContainer>
+            {Platform.OS === 'android' && <KeyboardAvoidingView behavior="padding" />}
         </SafeAreaProvider>
     );
 }
