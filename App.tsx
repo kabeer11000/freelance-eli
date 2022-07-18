@@ -6,10 +6,11 @@ import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import Home from "@views/Home/Home";
 import {SafeAreaProvider, SafeAreaView} from "react-native-safe-area-context";
 import Chat from "./src/components/Chat/Chat";
-import {ActiveChatProvider, AuthProvider, ChatProvider} from "./Contexts";
+import {ActiveChatProvider, AuthContextWrapper, AuthProvider, ChatProvider} from "./Contexts";
 import Login from "./src/views/Login/Login";
 import {createTheme, ThemeProvider} from "@rneui/themed";
 import VideoSDKWebView from "./src/components/VideoSDKWebView/VideoSDKWebView";
+import Search from "./src/views/Search/Search";
 
 export const Stack = createNativeStackNavigator();
 
@@ -36,6 +37,7 @@ export default function App() {
 
         prepare();
     }, []);
+    const [unveiled, setUnveiled] = useState(false);
     // const [navigationQueue, setNavigationQueue] = useState([]);
     const onLayoutRootView = useCallback(async () => {
         if (appIsReady) {
@@ -45,6 +47,7 @@ export default function App() {
             // we hide the splash screen once we know the root view has already
             // performed layout.
             await SplashScreen.hideAsync();
+            setUnveiled(true);
             // navigationQueue.map(([name, param]) => navigate(name, param));
         }
     }, [appIsReady]);
@@ -58,8 +61,8 @@ export default function App() {
         }
     })
     return (
-        <SafeAreaProvider>
-            <NavigationContainer onReady={onLayoutRootView}>
+        <SafeAreaProvider onLayout={onLayoutRootView}>
+            <NavigationContainer>
                 <ThemeProvider theme={theme}>
                     <SafeAreaView style={{backgroundColor: "#fff", minHeight: '100%', width: '100%'}}>
                         <AuthProvider>
@@ -68,10 +71,23 @@ export default function App() {
                                     <Stack.Navigator initialRouteName={"Home"} screenOptions={{
                                         headerShown: false
                                     }} defaultScreenOptions={{headerShown: false}}>
-                                        <Stack.Screen name={"Home"} component={Home}/>
-                                        <Stack.Screen name={"Chat"} component={Chat}/>
+                                        <Stack.Screen name={"Home"}>
+                                            {props => <AuthContextWrapper
+                                                isReady={unveiled}><Home {...props}/></AuthContextWrapper>}
+                                        </Stack.Screen>
+                                        <Stack.Screen name={"Chat"}>
+                                            {props => <AuthContextWrapper
+                                                isReady={unveiled}><Chat {...props}/></AuthContextWrapper>}
+                                        </Stack.Screen>
+                                        <Stack.Screen name={"Search"}>
+                                            {props => <AuthContextWrapper
+                                                isReady={unveiled}><Search {...props}/></AuthContextWrapper>}
+                                        </Stack.Screen>
                                         <Stack.Screen name={"Login"} component={Login}/>
-                                        <Stack.Screen name={"VideoSDK"} component={VideoSDKWebView}/>
+                                        <Stack.Screen name={"VideoSDKWebView"}>
+                                            {props => <AuthContextWrapper
+                                                isReady={unveiled}><VideoSDKWebView {...props}/></AuthContextWrapper>}
+                                        </Stack.Screen>
                                     </Stack.Navigator>
                                 </ActiveChatProvider>
                             </ChatProvider>

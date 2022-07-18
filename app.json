@@ -4,11 +4,11 @@
     "slug": "biz1",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/60083e92-e923-4d81-9a70-0be5d11bb749.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/splash.png",
-      "resizeMode": "cover",
+      "image": "./assets/60083e92-e923-4d81-9a70-0be5d11bb749.png",
+      "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
     "updates": {
@@ -21,15 +21,33 @@
       "supportsTablet": true
     },
     "android": {
+      "permissions": [
+        "ACCESS_NETWORK_STATE",
+        "CAMERA",
+        "CHANGE_NETWORK_STATE",
+        "INSTALL_PACKAGES",
+        "INTERNET",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE"
+      ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
       },
-      "package": "com.biz1.app"
+      "package": "com.biz1.app",
+      "versionCode": 1
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "The app accesses your photos to let you share them with your friends."
+        }
+      ]
+    ],
     "description": ""
   }
 }

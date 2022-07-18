@@ -1,13 +1,14 @@
 import React, {FC, useContext, useEffect, useState} from 'react';
 import {Image, View} from "react-native";
-import {Avatar, ListItem, Tab, TabView} from "@rneui/themed";
+import {Tab, TabView} from "@rneui/themed";
 import Colors from "@res/colors";
 import {Button} from "@rneui/base";
 import ChevronLeft from "@assets/chevron_left_FILL0_wght400_GRAD0_opsz48.png";
 import ChevronRight from "@assets/chevron_right_FILL0_wght400_GRAD0_opsz48.png";
-import {ChatContext} from "../../../Contexts";
+import {ActiveChatContext, ChatContext} from "../../../Contexts";
 import {IChat} from "../../../Types";
 import ChatList from "../Chats/ChatList";
+import {useNavigation} from "@react-navigation/native";
 
 interface MissionsProps {
 }
@@ -41,6 +42,8 @@ const Missions: FC<MissionsProps> = () => {
     const [tab, setTab] = React.useState(0);
     const chats = useContext(ChatContext);
     const [projects, setProjects] = useState<Array<{ projectId: string | number, chats: Array<IChat> }> | null>(null);
+    const navigation = useNavigation();
+    const {Load} = useContext(ActiveChatContext);
     useEffect(() => {
         if (!chats?.data) return;
         const projectsUnique = [...new Set(chats.data.map((chat, index) => chat.project_id))];
@@ -103,7 +106,11 @@ const Missions: FC<MissionsProps> = () => {
             <TabView value={tab} onChange={setTab} animationType={"spring"}>
                 {projects?.map(({projectId, chats}) => (
                     <TabView.Item key={`project-${projectId}`} style={{backgroundColor: 'transparent', width: '100%'}}>
-                        <ChatList chats={chats}/>
+                        <ChatList onItemPress={(chat) => {
+                            if (!Load) return;
+                            Load(chat);
+                            navigation.navigate("Chat", {multi: true});
+                        }} chats={chats}/>
                     </TabView.Item>
                 ))}
             </TabView>

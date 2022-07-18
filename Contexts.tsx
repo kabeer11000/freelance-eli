@@ -1,9 +1,10 @@
 import React, {createContext, useContext, useEffect, useState} from "react";
-import * as SecureStore from 'expo-secure-store';
+import AsyncStorage from "@react-native-async-storage/async-storage"
 import EndPoints from "./src/api/EndPointsMock";
 import {useLinkTo} from "@react-navigation/native";
 import {ActivityIndicator} from "react-native";
 import {IAuthContextObject, IChat, ILoginFunctionInterface, LoginFunction} from "./Types";
+import Fuse from "fuse.js";
 
 export const AuthContext = createContext<{
     Auth: IAuthContextObject | null | undefined,
@@ -30,19 +31,23 @@ export const AuthProvider = ({children}: { children: React.ReactChildren | React
             if (user && user.status) {
                 setAuth(user);
                 console.log("user recieved");
+                if (rememberMe) await AsyncStorage.setItem("app.usercreds", JSON.stringify({username, password}));
+                setSavedCredentials(true);
                 linkTo("/Home");
-                if (rememberMe) await SecureStore.setItemAsync("app.usercreds", JSON.stringify({username, password}))
+                console.log("Got User")
             }
         } catch (e) {
             console.log(e)
             throw new Error("Invalid Server Response");
         }
+        return;
     }
     const _autoLogin = async () => {
-        const savedUserCreds = await SecureStore.getItemAsync('app.usercreds');
+        const savedUserCreds = await AsyncStorage.getItem('app.usercreds');
         if (savedUserCreds) {
             const {username, password} = JSON.parse(savedUserCreds);
-            return await Login({username, password});
+            await Login({username, password});
+            setSavedCredentials(true);
         } else setSavedCredentials(false);
     }
     useEffect(() => {
@@ -54,21 +59,32 @@ export const AuthContextWrapper = ({isReady, children}: { isReady: boolean, chil
     const {savedCredentials} = useContext(AuthContext);
     if (isReady) {
         const linkTo = useLinkTo();
-        if (savedCredentials === false) linkTo("/Login")
+        if (savedCredentials === false) {
+            linkTo("/Login");
+            console.log("redirected to login")
+        }
         return <React.Fragment>{children}</React.Fragment>
 
     } else return <React.Fragment><ActivityIndicator/></React.Fragment>;
 }
 
-export const ChatContext = createContext<{ status: boolean, data: Array<IChat> } | null>(null);
+export const ChatContext = createContext<{ status: boolean, fuse: Fuse, data: Array<IChat> } | null>(null);
 export const ChatProvider = ({children}: { children: React.ReactChildren | React.ReactNode }) => {
-    const [state, setState] = useState<{ status: boolean, data: Array<IChat> } | null>(null);
+    const [state, setState] = useState<{ status: boolean, fuse: Fuse, data: Array<IChat> } | null>(null);
     const {Auth} = useContext(AuthContext);
     useEffect(() => {
         if (Auth?.token) fetch(EndPoints.GetChats({token: Auth.token}), {
             method: 'GET',
             redirect: 'follow'
-        }).then(res => res.ok ? res.json() : null).then(setState);
+        }).then(res => res.ok ? res.json() : null).then(res => {
+            const options = {
+                includeScore: true,
+                // Search in `author` and in `tags` array
+                keys: ["messages.message"],
+            }
+            const fuse = new Fuse(res.data, options);
+            setState({...res, fuse: fuse});
+        });
     }, [Auth]);
     return (
         <ChatContext.Provider value={state}>{children}</ChatContext.Provider>
@@ -126,7 +142,7 @@ export const ActiveChatProvider = ({children}: { children: React.ReactChildren |
                 redirect: 'follow',
                 signal: abortController.signal
             }).then(res => res.ok ? res.json() : null);
-            console.log(res);
+            // console.log(res);
             setState(res);
         }
     }

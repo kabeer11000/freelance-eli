@@ -2,9 +2,11 @@ import React, {FC, useEffect, useRef, useState} from 'react';
 import WebView from "react-native-webview";
 // import StaticServer from 'react-native-static-server';
 import {useLinkTo} from "@react-navigation/native";
-import {Text} from "@rneui/base";
+import {Button, Text} from "@rneui/base";
 import {ActivityIndicator, BackHandler, View} from "react-native";
 import {Camera} from "expo-camera";
+import Colors from "../../res/colors";
+import {SafeAreaView} from "react-native-safe-area-context";
 // import RNFS from 'react-native-fs';
 // let path = RNFS.MainBundlePath + '/www';
 
@@ -31,8 +33,8 @@ const Spinner = () => (
     </View>
 );
 
-const VideoSDKWebView: FC<VideoSDKWebViewProps> = ({route}) => {
-    const {api_key, meeting_id, name} = route.params;
+const VideoSDKWebView: FC<VideoSDKWebViewProps> = ({navigation, route}) => {
+    const {api_key, meeting_id, name, title} = route.params;
     const [hasPermission, setHasPermission] = useState(null);
     const [type, setType] = useState(Camera.Constants.Type.back);
     const webViewRef = useRef(null)
@@ -69,32 +71,79 @@ const VideoSDKWebView: FC<VideoSDKWebViewProps> = ({route}) => {
     }}><Text h2>This meeting has ended</Text></View>;
     console.log(`https://docs.kabeercloud.tk/tests/freelance-project-videosdk/index.html?api_key=${api_key}&meeting_id=${meeting_id}&name=${name}`)
     return (
-        <WebView
-            mixedContentMode={"always"}
-            bounces={true}
-            allowsInlineMediaPlayback
-            ref={webViewRef}
-            javaScriptEnabled
-            scalesPageToFit
-            mediaPlaybackRequiresUserAction={false}
-            javaScriptEnabledAndroid
-            useWebkit
-            startInLoadingState={true}
-            // renderLoading={Spinner}
-            javaScriptCanOpenWindowsAutomatically={true}
-            style={{
+        <SafeAreaView>
+            <View style={{
+                display: "flex",
+                backgroundColor: Colors.white,
                 width: "100%",
-                height: "100%"
-            }}
-            onMessage={(e: { nativeEvent: { data?: string } }) => {
-                if (e.nativeEvent.data === "MEETING_ENDED") {
-                    linkTo("/Home");
-                    setMeetingEnded(true);
-                }
-            }}
-            originWhitelist={['*']}
-            source={{uri: `https://docs.kabeercloud.tk/tests/freelance-project-videosdk/index.html?api_key=${api_key}&meeting_id=${meeting_id}&name=${name}`}}
-        />
+                position: "absolute",
+                height: 60,
+                zIndex: 999,
+                top: 0,
+                paddingTop: 10,
+                justifyContent: "space-between",
+                flexDirection: "row",
+                borderBottomColor: Colors.grey.background,
+                borderBottomWidth: 1,
+                shadowColor: Colors.black,
+                shadowOffset: {
+                    width: 0,
+                    height: 1,
+                },
+                shadowOpacity: 0.20,
+                shadowRadius: 1.41,
+                elevation: 2,
+            }}>
+                <View style={{
+                    display: "flex",
+                    width: "50%",
+                    justifyContent: "flex-start",
+                    flexDirection: "row"
+                }}>
+                    <Button onPress={() => {
+                        navigation.goBack()
+                    }} icon={{
+                        name: "arrow-back"
+                    }} containerStyle={{
+                        width: 50, height: 50,
+                        backgroundColor: "transparent"
+                    }} color={"transparent"}/>
+                    <Text h4 style={{
+                        marginLeft: 30
+                    }}>
+                        {title ?? "On Call"}
+                    </Text>
+                </View>
+            </View>
+            <View style={{height: "97.25%", marginTop: 25, width: "100%", display: "flex", backgroundColor: "black"}}>
+                <WebView
+                    mixedContentMode={"always"}
+                    bounces={true}
+                    allowsInlineMediaPlayback
+                    ref={webViewRef}
+                    javaScriptEnabled
+                    scalesPageToFit
+                    mediaPlaybackRequiresUserAction={false}
+                    javaScriptEnabledAndroid
+                    useWebkit
+                    startInLoadingState={true}
+                    cacheEnabled={false}
+                    renderLoading={Spinner}
+                    javaScriptCanOpenWindowsAutomatically={true}
+                    style={{
+                        width: "100%",
+                        height: "100%"
+                    }}
+                    onMessage={(e: { nativeEvent: { data?: string } }) => {
+                        if (e.nativeEvent.data === "MEETING_ENDED") {
+                            linkTo("/Home");
+                            setMeetingEnded(true);
+                        }
+                    }}
+                    originWhitelist={['*']}
+                    source={{uri: `https://docs.kabeercloud.tk/tests/freelance-project-videosdk/index.html?api_key=${api_key}&meeting_id=${meeting_id}&name=${name}`}}
+                /></View>
+        </SafeAreaView>
     );
 }
 

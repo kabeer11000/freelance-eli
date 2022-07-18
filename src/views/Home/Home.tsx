@@ -1,10 +1,10 @@
 import React, {useState} from 'react';
-import {Image, View} from "react-native";
+import {DevSettings, Image, View} from "react-native";
 import {SafeAreaView} from "react-native-safe-area-context";
-import {Header, Input} from "@rneui/base";
+import {BottomSheet, Header, Input} from "@rneui/base";
 // @ts-ignore
 import Icon from "@assets/60083e92-e923-4d81-9a70-0be5d11bb749.png";
-import {Icon as IconComponent, Tab, TabView, Text as ThemedText} from "@rneui/themed";
+import {Icon as IconComponent, ListItem, Tab, TabView, Text as ThemedText} from "@rneui/themed";
 // @ts-ignore
 import Colors from "@res/colors";
 // @ts-ignore
@@ -13,26 +13,29 @@ import Chats from "@components/Chats/Chats";
 import Missions from "@components/Missions/Missions";
 // @ts-ignore
 import Calls from "@components/Calls/Calls";
-
 import Strings from "@res/strings";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const Home = () => {
+const Home = ({navigation}) => {
     const [tab, setTab] = useState(0);
+    const [dialog, setDialog] = useState(false)
     return (
-        <View>
+        <SafeAreaView>
             <View style={{
                 paddingLeft: 20,
                 paddingRight: 20,
                 backgroundColor: Colors.white,
                 paddingBottom: 0,
-                marginTop: 0,
+                marginTop: "-10%",
                 paddingTop: 0
             }}>
                 <Header
                     containerStyle={{
                         height: 60,
                         marginTop: 0,
-                        marginBottom: 10
+                        marginBottom: 10,
+                        borderBottomWidth: 0,
+
                     }}
                     backgroundColor={"transparent"}
                     leftComponent={
@@ -59,7 +62,7 @@ const Home = () => {
                             width: 60,
                         }}>
                             <IconComponent style={{height: 50}} name={"notifications"}/>
-                            <IconComponent style={{height: 50}} name={"menu"}/>
+                            <IconComponent style={{height: 50}} onPress={() => setDialog(!dialog)} name={"menu"}/>
                         </View>
                     }
                 />
@@ -67,6 +70,7 @@ const Home = () => {
                     <Input
                         placeholder={Strings.search_bar_search}
                         blurOnSubmit={true}
+                        onPressIn={() => navigation.navigate("Search")}
                         containerStyle={{
                             borderRadius: 10,
                             height: 50,
@@ -121,7 +125,23 @@ const Home = () => {
                     {/*</TabView.Item>*/}
                 </TabView>
             </View>
-        </View>
+            <BottomSheet modalProps={{}} onBackdropPress={() => setDialog(false)} isVisible={dialog}>
+                <View style={{
+                    backgroundColor: Colors.white
+                }}>
+                    <ListItem onPress={async () => {
+                        await AsyncStorage.removeItem('app.usercreds');
+                        // navigation.navigate("Home");
+                        setDialog(false);
+                        DevSettings.reload();
+                    }}>
+                        <ListItem.Content>
+                            <ListItem.Title>Log Out</ListItem.Title>
+                        </ListItem.Content>
+                    </ListItem>
+                </View>
+            </BottomSheet>
+        </SafeAreaView>
     );
 }
 

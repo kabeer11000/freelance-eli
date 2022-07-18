@@ -1,10 +1,11 @@
 import React, {useContext, useEffect, useState} from 'react'
-import {Bubble, GiftedChat} from 'react-native-gifted-chat'
+import {Actions, Bubble, GiftedChat} from 'react-native-gifted-chat'
 import {ActiveChatContext, AuthContext} from "../../../Contexts";
-import {Button, Input, Text} from "@rneui/base"
-import {View} from "react-native";
+import {Button, Icon, Input, Text} from "@rneui/base"
+import {ActivityIndicator, View} from "react-native";
 import Colors from "../../res/colors";
 import {Avatar} from "@rneui/themed";
+import * as ImagePicker from 'expo-image-picker';
 
 // const socket = io("ws://192.168.10.2:3001");
 // console.log(socket);
@@ -13,15 +14,31 @@ const ThemedInput = () => {
     return <Input/>
 }
 
-export function ConversationView({navigation}) {
+export function ConversationView({navigation, route}) {
     const {Auth} = useContext(AuthContext);
     const {chat} = useContext(ActiveChatContext);
+    const {multi} = route;
     const [text, setText] = useState("");
     const [user, setUser] = useState<{ id: string; user_name: string; name: string; profile_image: string; } | undefined>(undefined);
     useEffect(() => {
         Auth && chat?.status ? setUser(Auth.team_members.find(user => user.id === Object.keys(chat.data.users)[0])) : null;
     }, [chat]); // Reloads with active chat
-    console.log(!!Auth, !!chat, !!user);
+    const [image, setImage] = useState<any>();
+    const pickImage = async () => {
+        // No permissions request is necessary for launching the image library
+        let result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            // aspect: [4, 3],
+            base64: true,
+            quality: 1,
+        });
+
+        if (!result.cancelled) {
+            // console.log(result)
+            setImage(result);
+        }
+    };
     return (
         <View>
             {Auth && chat?.status && user ? <View style={{
@@ -66,14 +83,20 @@ export function ConversationView({navigation}) {
                         justifyContent: "space-between",
                         flexDirection: "row"
                     }}>
-                        <Button icon={{
+                        <Button onPress={() => {
+                            navigation.navigate("VideoSDKWebView", {
+                                api_key: "0b360177-d459-4975-b383-aaa65c4a1698",
+                                meeting_id: chat?.data.id,
+                                name: Auth?.user_name
+                            });
+                        }} icon={{
                             name: "videocam"
                         }} containerStyle={{
                             width: 50, height: 50,
                             backgroundColor: "transparent"
                         }} color={"transparent"}/>
                         <Button onPress={() => {
-                            navigation.navigate("VideoSDK", {
+                            navigation.navigate("VideoSDKWebView", {
                                 api_key: "0b360177-d459-4975-b383-aaa65c4a1698",
                                 meeting_id: chat?.data.id,
                                 name: Auth?.user_name
@@ -87,9 +110,7 @@ export function ConversationView({navigation}) {
                     </View>
                 </View>
                 <GiftedChat
-                    messagesContainerStyle={{
-                        marginTop: 25
-                    }}
+                    messagesContainerStyle={{marginTop: 25}}
                     renderUsernameOnMessage={true}
                     renderBubble={props => {
                         return (
@@ -106,6 +127,33 @@ export function ConversationView({navigation}) {
                             />
                         );
                     }}
+                    renderActions={(props) => {
+                        return (
+                            <Actions
+                                {...props}
+                                options={{
+                                    ['Send Image']: async () => {
+                                        await pickImage();
+                                        console.log(Object.keys(image));
+                                        // console.log(await (await fetch(EndPointsMock.UploadImageTest, {
+                                        //     method: "post",
+                                        //     body: JSON.stringify({
+                                        //         image: image,
+                                        //         name: image.uri.split("/").at(-1)
+                                        //     })
+                                        // })).json());
+                                    },
+                                }}
+                                icon={() => (
+                                    <Icon name={'attachment'} size={28} color={Colors.tertiary}/>
+                                )}
+                                onSend={args => {
+                                }}
+                            />
+                        )
+                    }
+
+                    }
                     messages={chat.data.messages.map(message => {
                         return ({
                             _id: Math.random(),
@@ -122,13 +170,26 @@ export function ConversationView({navigation}) {
                     alwaysShowSend
                     onInputTextChanged={_text => setText(_text)}
                     onSend={messages => {
+                        console.log(messages)
                     }}
                     user={{
                         _id: Auth?.id,
                         name: Auth?.user_name,
                     }}
                 />
-            </View> : <Text>"null"</Text>}
+            </View> : <View style={{
+                alignItems: 'center',
+                justifyContent: 'center',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                backgroundColor: '#fff',
+                height: '100%',
+                width: '100%'
+            }}>
+                <ActivityIndicator size="large" color="#f29900"/>
+            </View>
+            }
         </View>
 
     )
