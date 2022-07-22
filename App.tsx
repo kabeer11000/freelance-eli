@@ -1,18 +1,40 @@
-import {KeyboardAvoidingView, Platform, StyleSheet} from 'react-native';
-import React, {useCallback, useEffect, useState} from "react";
+import {KeyboardAvoidingView, Platform, StatusBar} from 'react-native';
+import React, {useCallback, useContext, useEffect, useState} from "react";
 import * as SplashScreen from 'expo-splash-screen';
 import {NavigationContainer} from "@react-navigation/native";
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import Home from "@views/Home/Home";
 import {SafeAreaProvider, SafeAreaView} from "react-native-safe-area-context";
 import Chat from "./src/components/Chat/Chat";
-import {ActiveChatProvider, AuthContextWrapper, AuthProvider, ChatProvider} from "./Contexts";
+import {ActiveChatProvider, AuthContext, AuthProvider, ChatProvider} from "./Contexts";
 import Login from "./src/views/Login/Login";
 import {createTheme, ThemeProvider} from "@rneui/themed";
 import VideoSDKWebView from "./src/components/VideoSDKWebView/VideoSDKWebView";
 import Search from "./src/views/Search/Search";
 
 export const Stack = createNativeStackNavigator();
+
+const AuthenticatedNavigator = () => {
+    const {Auth} = useContext(AuthContext);
+    return (
+        <Stack.Navigator screenOptions={{headerShown: false}}>
+            {Auth?.status ? (
+                <>
+                    <Stack.Screen name={"Home"} component={Home}/>
+                    <Stack.Screen name={"Chat"} component={Chat}/>
+                    <Stack.Screen name={"Search"} component={Search}/>
+                    <Stack.Screen name={"VideoSDKWebView"} component={VideoSDKWebView}/>
+                    <Stack.Screen name={"Login"} component={Login}/>
+                </>
+            ) : (
+                <>
+                    <Stack.Screen name={"Login"} component={Login}/>
+                </>
+            )
+            }
+        </Stack.Navigator>
+    )
+}
 
 export default function App() {
     const [appIsReady, setAppIsReady] = useState(false);
@@ -37,8 +59,6 @@ export default function App() {
 
         prepare();
     }, []);
-    const [unveiled, setUnveiled] = useState(false);
-    // const [navigationQueue, setNavigationQueue] = useState([]);
     const onLayoutRootView = useCallback(async () => {
         if (appIsReady) {
             // This tells the splash screen to hide immediately! If we call this after
@@ -47,64 +67,28 @@ export default function App() {
             // we hide the splash screen once we know the root view has already
             // performed layout.
             await SplashScreen.hideAsync();
-            setUnveiled(true);
             // navigationQueue.map(([name, param]) => navigate(name, param));
         }
     }, [appIsReady]);
-
-    if (!appIsReady) {
-        return null;
-    }
-    const theme = createTheme({
-        colors: {
-            background: "#fff"
-        }
-    })
+    if (!appIsReady) return null;
+    const theme = createTheme({colors: {background: "#fff"}});
     return (
-        <SafeAreaProvider onLayout={onLayoutRootView}>
-            <NavigationContainer>
+        <SafeAreaProvider>
+            <NavigationContainer onReady={onLayoutRootView}>
                 <ThemeProvider theme={theme}>
                     <SafeAreaView style={{backgroundColor: "#fff", minHeight: '100%', width: '100%'}}>
                         <AuthProvider>
                             <ChatProvider>
                                 <ActiveChatProvider>
-                                    <Stack.Navigator initialRouteName={"Home"} screenOptions={{
-                                        headerShown: false
-                                    }} defaultScreenOptions={{headerShown: false}}>
-                                        <Stack.Screen name={"Home"}>
-                                            {props => <AuthContextWrapper
-                                                isReady={unveiled}><Home {...props}/></AuthContextWrapper>}
-                                        </Stack.Screen>
-                                        <Stack.Screen name={"Chat"}>
-                                            {props => <AuthContextWrapper
-                                                isReady={unveiled}><Chat {...props}/></AuthContextWrapper>}
-                                        </Stack.Screen>
-                                        <Stack.Screen name={"Search"}>
-                                            {props => <AuthContextWrapper
-                                                isReady={unveiled}><Search {...props}/></AuthContextWrapper>}
-                                        </Stack.Screen>
-                                        <Stack.Screen name={"Login"} component={Login}/>
-                                        <Stack.Screen name={"VideoSDKWebView"}>
-                                            {props => <AuthContextWrapper
-                                                isReady={unveiled}><VideoSDKWebView {...props}/></AuthContextWrapper>}
-                                        </Stack.Screen>
-                                    </Stack.Navigator>
+                                    <AuthenticatedNavigator/>
                                 </ActiveChatProvider>
                             </ChatProvider>
                         </AuthProvider>
                     </SafeAreaView>
                 </ThemeProvider>
+                <StatusBar/>
             </NavigationContainer>
             {Platform.OS === 'android' && <KeyboardAvoidingView behavior="padding" />}
         </SafeAreaProvider>
     );
 }
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#fff',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-});

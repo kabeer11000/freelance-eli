@@ -1,12 +1,6 @@
 import React, {FC, useContext} from 'react';
-import EndPoints from "../../api/EndPointsMock";
-import {Avatar, ListItem} from "@rneui/themed";
-import {ActivityIndicator, View} from "react-native";
+import {View} from "react-native";
 import {ActiveChatContext, AuthContext, ChatContext} from "../../../Contexts";
-import {Chip, Text} from "@rneui/base";
-
-import * as timeago from 'timeago.js';
-import Colors from "../../res/colors";
 import ChatList from "./ChatList";
 import {useNavigation} from "@react-navigation/native";
 

@@ -1,10 +1,10 @@
 import React, {useState} from 'react';
-import {DevSettings, Image, View} from "react-native";
+import {DevSettings, View} from "react-native";
 import {SafeAreaView} from "react-native-safe-area-context";
-import {BottomSheet, Header, Input} from "@rneui/base";
+import {BottomSheet, Input} from "@rneui/base";
 // @ts-ignore
 import Icon from "@assets/60083e92-e923-4d81-9a70-0be5d11bb749.png";
-import {Icon as IconComponent, ListItem, Tab, TabView, Text as ThemedText} from "@rneui/themed";
+import {ListItem, Tab, TabView} from "@rneui/themed";
 // @ts-ignore
 import Colors from "@res/colors";
 // @ts-ignore
@@ -15,7 +15,11 @@ import Missions from "@components/Missions/Missions";
 import Calls from "@components/Calls/Calls";
 import Strings from "@res/strings";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import AppHeader from "@components/Header/Header"
 
+const HomeHeader = () => {
+
+}
 const Home = ({navigation}) => {
     const [tab, setTab] = useState(0);
     const [dialog, setDialog] = useState(false)
@@ -29,43 +33,7 @@ const Home = ({navigation}) => {
                 marginTop: "-10%",
                 paddingTop: 0
             }}>
-                <Header
-                    containerStyle={{
-                        height: 60,
-                        marginTop: 0,
-                        marginBottom: 10,
-                        borderBottomWidth: 0,
-
-                    }}
-                    backgroundColor={"transparent"}
-                    leftComponent={
-                        <View style={{
-                            display: "flex",
-                            flexDirection: "row",
-                            justifyContent: "space-around",
-                            width: 100,
-                            maxHeight: 50
-                        }}>
-                            <Image source={Icon} style={{
-                                height: 40,
-                                width: 40
-                            }}/>
-                            <ThemedText h4>{Strings.app_title}</ThemedText>
-                        </View>
-                    }
-                    rightComponent={
-                        <View style={{
-                            maxHeight: 50,
-                            display: "flex",
-                            flexDirection: "row",
-                            justifyContent: "space-between",
-                            width: 60,
-                        }}>
-                            <IconComponent style={{height: 50}} name={"notifications"}/>
-                            <IconComponent style={{height: 50}} onPress={() => setDialog(!dialog)} name={"menu"}/>
-                        </View>
-                    }
-                />
+                <AppHeader/>
                 <View style={{display: "flex",}}>
                     <Input
                         placeholder={Strings.search_bar_search}
@@ -126,9 +94,7 @@ const Home = ({navigation}) => {
                 </TabView>
             </View>
             <BottomSheet modalProps={{}} onBackdropPress={() => setDialog(false)} isVisible={dialog}>
-                <View style={{
-                    backgroundColor: Colors.white
-                }}>
+                <View style={{backgroundColor: Colors.white}}>
                     <ListItem onPress={async () => {
                         await AsyncStorage.removeItem('app.usercreds');
                         // navigation.navigate("Home");

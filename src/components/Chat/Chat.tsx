@@ -16,12 +16,23 @@ const ThemedInput = () => {
 
 export function ConversationView({navigation, route}) {
     const {Auth} = useContext(AuthContext);
-    const {chat} = useContext(ActiveChatContext);
+    const {chat, SendMessage} = useContext(ActiveChatContext);
     const {multi} = route;
     const [text, setText] = useState("");
     const [user, setUser] = useState<{ id: string; user_name: string; name: string; profile_image: string; } | undefined>(undefined);
+    const [giftedMessages, setGiftedMessages] = useState([]);
     useEffect(() => {
-        Auth && chat?.status ? setUser(Auth.team_members.find(user => user.id === Object.keys(chat.data.users)[0])) : null;
+        if (Auth && chat?.status) setUser(Auth.team_members.find(user => user.id === Object.keys(chat.data.users)[0]));
+        if (chat?.status && user) setGiftedMessages(chat.data.messages.map(message => ({
+            _id: Math.random(),
+            text: message.message,
+            createdAt: new Date(message.time),
+            user: {
+                _id: user.id,
+                name: user.name,
+                avatar: user.profile_image,
+            },
+        })));
     }, [chat]); // Reloads with active chat
     const [image, setImage] = useState<any>();
     const pickImage = async () => {
@@ -41,10 +52,7 @@ export function ConversationView({navigation, route}) {
     };
     return (
         <View>
-            {Auth && chat?.status && user ? <View style={{
-                height: "100%",
-                // flex: 1
-            }}>
+            {Auth && chat?.status && user ? <View style={{height: "100%"}}>
                 <View style={{
                     display: "flex",
                     backgroundColor: Colors.white,
@@ -89,9 +97,7 @@ export function ConversationView({navigation, route}) {
                                 meeting_id: chat?.data.id,
                                 name: Auth?.user_name
                             });
-                        }} icon={{
-                            name: "videocam"
-                        }} containerStyle={{
+                        }} icon={{name: "videocam"}} containerStyle={{
                             width: 50, height: 50,
                             backgroundColor: "transparent"
                         }} color={"transparent"}/>
@@ -110,72 +116,46 @@ export function ConversationView({navigation, route}) {
                     </View>
                 </View>
                 <GiftedChat
-                    messagesContainerStyle={{marginTop: 25}}
+                    messagesContainerStyle={{marginTop: 25, paddingBottom: 25}}
                     renderUsernameOnMessage={true}
-                    renderBubble={props => {
-                        return (
-                            <Bubble
-                                {...props}
-                                textStyle={{
-                                    color: "white"
-                                }}
-                                wrapperStyle={{
-                                    left: {
-                                        backgroundColor: Colors.tertiary,
-                                    },
-                                }}
-                            />
-                        );
-                    }}
-                    renderActions={(props) => {
-                        return (
-                            <Actions
-                                {...props}
-                                options={{
-                                    ['Send Image']: async () => {
-                                        await pickImage();
-                                        console.log(Object.keys(image));
-                                        // console.log(await (await fetch(EndPointsMock.UploadImageTest, {
-                                        //     method: "post",
-                                        //     body: JSON.stringify({
-                                        //         image: image,
-                                        //         name: image.uri.split("/").at(-1)
-                                        //     })
-                                        // })).json());
-                                    },
-                                }}
-                                icon={() => (
-                                    <Icon name={'attachment'} size={28} color={Colors.tertiary}/>
-                                )}
-                                onSend={args => {
-                                }}
-                            />
-                        )
-                    }
-
-                    }
-                    messages={chat.data.messages.map(message => {
-                        return ({
-                            _id: Math.random(),
-                            text: message.message,
-                            createdAt: new Date(message.time),
-                            user: {
-                                _id: user.id,
-                                name: user.name,
-                                avatar: user.profile_image,
-                            },
-                        })
-                    })}
+                    renderBubble={props => (
+                        <Bubble
+                            {...props}
+                            textStyle={{color: "white"}}
+                            wrapperStyle={{left: {backgroundColor: Colors.tertiary}}}
+                        />
+                    )}
+                    renderActions={(props) => (
+                        <Actions
+                            {...props}
+                            options={{
+                                ['Send Image']: async () => {
+                                    await pickImage();
+                                    console.log(Object.keys(image));
+                                    // console.log(await (await fetch(EndPointsMock.UploadImageTest, {
+                                    //     method: "post",
+                                    //     body: JSON.stringify({
+                                    //         image: image,
+                                    //         name: image.uri.split("/").at(-1)
+                                    //     })
+                                    // })).json());
+                                },
+                            }}
+                            icon={() => (<Icon name={'attachment'} size={28} color={Colors.tertiary}/>)}
+                            onSend={args => {
+                            }}
+                        />
+                    )}
+                    messages={giftedMessages}
                     text={text}
                     alwaysShowSend
                     onInputTextChanged={_text => setText(_text)}
-                    onSend={messages => {
-                        console.log(messages)
+                    onSend={async (messages) => {
+                        await SendMessage({text: messages.at(-1).text});
+                        // console.log(giftedMessages.length, messages, [...giftedMessages, messages.at(-1)].length)
+                        setGiftedMessages(GiftedChat.append(giftedMessages, messages));
                     }}
-                    user={{
-                        _id: Auth?.id,
-                        name: Auth?.user_name,
-                    }}
+                    user={{_id: Auth?.id, name: Auth?.user_name}}
                 />
             </View> : <View style={{
                 alignItems: 'center',

@@ -5,9 +5,8 @@ import {Text} from "@rneui/themed";
 import Strings from "../../res/strings";
 import {Button, CheckBox, Icon, Input} from "@rneui/base";
 import Colors from "@res/colors"
-import {ListItemCheckBox} from "@rneui/base/dist/ListItem/ListItem.CheckBox";
 import {AuthContext} from "../../../Contexts";
-import {useLinkTo, useNavigation} from "@react-navigation/native";
+import {useNavigation} from "@react-navigation/native";
 
 interface LoginProps {
     version: string,
@@ -17,7 +16,7 @@ interface LoginProps {
 // @ts-ignore
 const LoginComponent: FC<LoginProps> = () => {
     const [checkBox, setCheckBox] = React.useState(true);
-    const [creds, setCreds] = React.useState({username: "", password: ""});
+    const [creds, setCreds] = React.useState({username: "jay", password: "pass0364"});
     const [error, setError] = React.useState(false);
     const {Login} = useContext(AuthContext);
     const navigation = useNavigation();
@@ -129,6 +128,7 @@ const LoginComponent: FC<LoginProps> = () => {
                             borderRadius: 10
                         }} onPress={async () => {
                             try {
+                                console.log("trying to login")
                                 await Login({
                                     username: creds.username,
                                     password: creds.password,

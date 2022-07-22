@@ -1959,48 +1959,6 @@
     "@urql/core" ">=2.3.1"
     wonka "^4.0.14"
 
-"@videosdk.live/js-sdk@^0.0.36":
-  version "0.0.36"
-  resolved "https://registry.yarnpkg.com/@videosdk.live/js-sdk/-/js-sdk-0.0.36.tgz#07a592df13c9af10046f2e4afa61e902ed0f44c7"
-  integrity sha512-bCwzk+IYGlFsYBtCmXlIZctMCH/rUJ/vzK6lX2MgpHoPqO+aI7oxHQGiNeiIv30VRBkrraassWDp95SNmQYMZA==
-
-"@videosdk.live/react-native-foreground-service@^0.0.1":
-  version "0.0.1"
-  resolved "https://registry.yarnpkg.com/@videosdk.live/react-native-foreground-service/-/react-native-foreground-service-0.0.1.tgz#3d1f222de8ccb13692f8605c6d45ceec73380946"
-  integrity sha512-z+9qEIixhbpGBKTU83XP6bd1Bx69yLkto19W/52GHE22hiM8ezXjsPdBxWp6/1C3o3Ng7HO5TZ2ddrTC7La88Q==
-
-"@videosdk.live/react-native-incallmanager@^0.0.6":
-  version "0.0.6"
-  resolved "https://registry.yarnpkg.com/@videosdk.live/react-native-incallmanager/-/react-native-incallmanager-0.0.6.tgz#7da9b78b4b3e111a8605fb51513d851daf52f909"
-  integrity sha512-mddXWFQyPtMuveaJ2561qGTtKDbwaoF/lRvIfgfp9UF8rftFGmcm+1Sq7dDoyQD0XMvVuneV4nOi6QVnY+qenw==
-
-"@videosdk.live/react-native-sdk@^0.0.32":
-  version "0.0.32"
-  resolved "https://registry.yarnpkg.com/@videosdk.live/react-native-sdk/-/react-native-sdk-0.0.32.tgz#e93a9f587cca922f2e9ea5cd79f04a0e81ec5d34"
-  integrity sha512-IDKqFlEkl2xn6GqbJaqdVnLBWbPG15PoEvNEWq/tOfcsMYsrZjlhHLK1Er8hG3/SUUP3rGmWsYQr0xE9SukmSA==
-  dependencies:
-    "@videosdk.live/react-native-foreground-service" "^0.0.1"
-    "@videosdk.live/react-native-incallmanager" "^0.0.6"
-    "@videosdk.live/react-native-webrtc" "^0.0.4"
-    "@videosdk.live/react-sdk" "0.1.37"
-
-"@videosdk.live/react-native-webrtc@^0.0.4":
-  version "0.0.4"
-  resolved "https://registry.yarnpkg.com/@videosdk.live/react-native-webrtc/-/react-native-webrtc-0.0.4.tgz#82aacf26c23a99212e8809099f48c3e1d4711679"
-  integrity sha512-rYobhnRG+mDmiq9C3OKi7X6XXaTpyQRYBT02/L2aMzA4/R69Zwxb1yyJdvno4m/lwALB856NH1apRRJps3aeOQ==
-  dependencies:
-    base64-js "1.5.1"
-    event-target-shim "6.0.2"
-    tar "6.1.11"
-
-"@videosdk.live/react-sdk@0.1.37":
-  version "0.1.37"
-  resolved "https://registry.yarnpkg.com/@videosdk.live/react-sdk/-/react-sdk-0.1.37.tgz#66c789f4327d00138ef68d2de90ad25ac13a2f5d"
-  integrity sha512-6FDzhwqj0nVR3gxenQeGdT4s71kn61vJ2Ti+TxB2D+VZzXa/h3a1Qe5gByb4TwG5fRje1IqnIJUnmOVx6TFM1Q==
-  dependencies:
-    "@videosdk.live/js-sdk" "^0.0.36"
-    events "^3.3.0"
-
 "@xmldom/xmldom@~0.7.0":
   version "0.7.5"
   resolved "https://registry.yarnpkg.com/@xmldom/xmldom/-/xmldom-0.7.5.tgz#09fa51e356d07d0be200642b0e4f91d8e6dd408d"
@@ -2325,7 +2283,7 @@ balanced-match@^1.0.0:
   resolved "https://registry.yarnpkg.com/balanced-match/-/balanced-match-1.0.2.tgz#e83e3a7e3f300b34cb9d87f615fa0cbf357690ee"
   integrity sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw==
 
-base64-js@1.5.1, base64-js@^1.1.2, base64-js@^1.2.3, base64-js@^1.3.1, base64-js@^1.5.1:
+base64-js@^1.1.2, base64-js@^1.2.3, base64-js@^1.3.1, base64-js@^1.5.1:
   version "1.5.1"
   resolved "https://registry.yarnpkg.com/base64-js/-/base64-js-1.5.1.tgz#1b1b440160a5bf7ad40b650f095963481903930a"
   integrity sha512-AKpaYlHn8t4SVbOHCy+b5+KKgvR4vrsD8vbvrbiQJps7fKDTkjkDry6ji0rUJjC0kzbNePLwzxq8iypo41qeWA==
@@ -3235,20 +3193,10 @@ etag@~1.8.1:
   resolved "https://registry.yarnpkg.com/etag/-/etag-1.8.1.tgz#41ae2eeb65efa62268aebfea83ac7d79299b0887"
   integrity sha512-aIL5Fx7mawVa300al2BnEE4iNvo1qETxLrPI/o05L7z6go7fCw1J6EQmbK4FmJ2AS7kgVF/KEZWufBfdClMcPg==
 
-event-target-shim@6.0.2:
-  version "6.0.2"
-  resolved "https://registry.yarnpkg.com/event-target-shim/-/event-target-shim-6.0.2.tgz#ea5348c3618ee8b62ff1d344f01908ee2b8a2b71"
-  integrity sha512-8q3LsZjRezbFZ2PN+uP+Q7pnHUMmAOziU2vA2OwoFaKIXxlxl38IylhSSgUorWu/rf4er67w0ikBqjBFk/pomA==
-
 event-target-shim@^5.0.0, event-target-shim@^5.0.1:
   version "5.0.1"
   resolved "https://registry.yarnpkg.com/event-target-shim/-/event-target-shim-5.0.1.tgz#5d4d3ebdf9583d63a5333ce2deb7480ab2b05789"
   integrity sha512-i/2XbnSz/uxRCU6+NdVJgKWDTM427+MqYbkQzD321DuCQJUqOuJKIA0IM2+W2xtYHdKOmZ4dR6fExsd4SXL+WQ==
-
-events@^3.3.0:
-  version "3.3.0"
-  resolved "https://registry.yarnpkg.com/events/-/events-3.3.0.tgz#31a95ad0a924e2d2c419a813aeb2c4e878ea7400"
-  integrity sha512-mQw+2fkQbALzQ7V0MY0IqdnXNOeTtP4r0lN9z7AAawCXgqea7bDii20AYrIBrFd/Hx0M2Ocz6S111CaFkUcb0Q==
 
 exec-async@^2.2.0:
   version "2.2.0"
@@ -5930,11 +5878,6 @@ react-native-size-matters@^0.4.0:
   resolved "https://registry.yarnpkg.com/react-native-size-matters/-/react-native-size-matters-0.4.0.tgz#01bfd0d59454318f4e0b13fe9c1eb0523d70f2e0"
   integrity sha512-8/C0htHrFWeUm9N8JegmadovUfgTWkGBkDPZ1N3YkXtDWb+98Ya2gThiKcu445r8c7YhcrBfnHz/mYsXIusaOQ==
 
-react-native-static-server@^0.5.0:
-  version "0.5.0"
-  resolved "https://registry.yarnpkg.com/react-native-static-server/-/react-native-static-server-0.5.0.tgz#4b396082bfe7dfdbba6fe7d7de894de5ba4ebadb"
-  integrity sha512-RGteckPoBZq48p9Y8V67bjZGPxLHKkEOAffLSUJiGC7hkx+H+zuekqCR+04F30NuWB7y+nb8N7Qld2RGjX5DNg==
-
 react-native-swipe-list-view@^3.2.9:
   version "3.2.9"
   resolved "https://registry.yarnpkg.com/react-native-swipe-list-view/-/react-native-swipe-list-view-3.2.9.tgz#d725c7cdf481dd5df12a00dbfe0120013b5f2e59"
@@ -6789,7 +6732,7 @@ supports-preserve-symlinks-flag@^1.0.0:
   resolved "https://registry.yarnpkg.com/supports-preserve-symlinks-flag/-/supports-preserve-symlinks-flag-1.0.0.tgz#6eda4bd344a3c94aea376d4cc31bc77311039e09"
   integrity sha512-ot0WnXS9fgdkgIcePe6RHNk1WA8+muPa6cSjeR3V8K27q9BB1rTE3R1p7Hv0z1ZyAc8s6Vvv8DIyWf681MAt0w==
 
-tar@6.1.11, tar@^6.0.2, tar@^6.0.5:
+tar@^6.0.2, tar@^6.0.5:
   version "6.1.11"
   resolved "https://registry.yarnpkg.com/tar/-/tar-6.1.11.tgz#6760a38f003afa1b2ffd0ffe9e9abbd0eab3d621"
   integrity sha512-an/KZQzQUkZCkuoAA64hM92X0Urb6VpRhAFllDzz44U2mcD5scmT3zBc4VgVpkugF580+DQn8eAFSyoQt0tznA==

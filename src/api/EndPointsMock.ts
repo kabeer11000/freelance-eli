@@ -12,7 +12,7 @@ export default {
                 ip,
                 lang,
                 version
-            }: { username: string, password: string, ip: string | number, lang: string, version: string | number }) => `https://pastebin.com/raw/Gig6ZHGd`,
+            }: { username: string, password: string, ip?: string | number, lang?: string, version?: string | number }) => `https://bull36.com/app/login?username=${username}&password=${password}&lang=he&ip=123&version=0.1`,
     GetChats: (a: { token: string, lang?: string, ip?: string, version?: string }) => `https://pastebin.com/raw/fANy6bKZ`,
     GetChat: (a: { token: string, lang?: string, id: string | number, ip?: string, version?: string }) => `https://pastebin.com/raw/HkkukZaH`,
     ReadMessage: (a: { token: string, lang?: string, id: string, ip?: string, version?: string }) => `http://192.168.10.5:3000/static/read-message.json`,

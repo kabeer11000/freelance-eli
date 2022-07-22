@@ -3,11 +3,12 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-//      "@components/*": ["./src/components/*"],
-//      "@views/*": ["./src/views/*"],
-//      "@res/*": ["./src/res/*"],
-//      "@assets/*": ["./assets/*"]
+      //      "@components/*": ["./src/components/*"],
+      //      "@views/*": ["./src/views/*"],
+      //      "@res/*": ["./src/res/*"],
+      //      "@assets/*": ["./assets/*"]
     },
-    "strict": true
+    "strict": false,
+    "allowSyntheticDefaultImports": true
   },
 }
