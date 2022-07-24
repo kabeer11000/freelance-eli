@@ -1,10 +1,9 @@
-
-
 export type LoginFunction = (a: ILoginFunctionInterface) => Promise<void>
+
 export interface IChat {
     "_id"?: {
         "$oid": string
-    },
+    } | string | number,
     "id": string | number,
     "contactus_id": number,
     "owner": number,
@@ -19,7 +18,8 @@ export interface IChat {
         "time": string,
         "message": string,
         "direction": string,
-        "file_url"?: string
+        "file_url"?: string,
+        "user_id": string
     }>,
     "last_update": string,
     "csv_id": number

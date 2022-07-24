@@ -2,6 +2,7 @@ import React, {createContext, useContext, useEffect, useState} from "react";
 import EndPoints from "./src/api/EndPoints";
 import {IAuthContextObject, IChat, ILoginFunctionInterface, LoginFunction} from "./Types";
 import Fuse from "fuse.js";
+import {toFormData} from "./src/Utils";
 
 
 type IAuthLoginFunction = (a: ILoginFunctionInterface) => any;
@@ -12,35 +13,58 @@ export const AuthContext = createContext<{ Auth: IAuthContextObject | null | und
 });
 export const AuthProvider = ({children}: { children: React.ReactChildren | React.ReactNode }) => {
     const [Auth, setAuth]: [IAuthContextObject | null | undefined, any] = useState();
+    const abortController = new AbortController()
     const Login = async ({username, password}: ILoginFunctionInterface) => {
+        // console.log(EndPoints.Login({username, password, ip: "123", lang: "en", version: "0.1"}))
         const response = await fetch(EndPoints.Login({username, password, ip: "123", lang: "en", version: "0.1"}), {
             method: 'GET',
-            headers: {},
-            redirect: 'follow'
+            // headers: {},
+            // signal: abortController.signal,
+            // redirect: 'follow'
         });
         const user: IAuthContextObject | null = response.ok ? await response.json() : null;
-        if (user && user.status) return setAuth({...user, token: "GC8RUZ98QWERT"});
+        console.log(user);
+        if (user && user.status) return setAuth({
+            ...user,
+            token: "YIRQGWLH169WHKP23642"
+        }); /** , token: "YIRQGWLH169WHKP23642"  heard Coded token was used to send chat messages **/
         else throw new Error("User Response Null");
     }
+    useEffect(() => {
+        return () => {
+            abortController.abort()
+        }
+    }, []);
     return <AuthContext.Provider value={{Auth, Login}}>{children}</AuthContext.Provider>
 };
 
-export const ChatContext = createContext<{ status: boolean, fuse: Fuse, data: Array<IChat> } | null>(null);
+export const ChatContext = createContext<{ status: boolean, error?: boolean, fuse: Fuse, data: Array<IChat> | null | undefined } | null>(null);
 export const ChatProvider = ({children}: { children: React.ReactChildren | React.ReactNode }) => {
-    const [state, setState] = useState<{ status: boolean, fuse: Fuse, data: Array<IChat> } | null>(null);
+    const [state, setState] = useState<{ status: boolean, error?: boolean, fuse: Fuse, data: Array<IChat> | null | undefined } | null>(null);
     const {Auth} = useContext(AuthContext);
+    const abortController = new AbortController();
     useEffect(() => {
-        if (Auth?.token) fetch(EndPoints.GetChats({token: Auth.token}), {
+        if (Auth?.token) console.log(EndPoints.GetChats({token: Auth.token, page: "1"}))
+        if (Auth?.token) fetch(EndPoints.GetChats({token: Auth.token, page: "1"}), {
             method: 'GET',
+            signal: abortController.signal,
             redirect: 'follow'
         }).then(res => res.ok ? res.json() : null).then(res => {
-            const options = {
+            if (!res.status) return setState({
+                status: false,
+                fuse: null,
+                data: null,
+                error: true
+            });
+            const fuse = new Fuse(res.data, {
                 includeScore: true,
                 keys: ["messages.message"],
-            }
-            const fuse = new Fuse(res.data, options);
+            });
             setState({...res, fuse: fuse});
         });
+        return () => {
+            abortController.abort();
+        }
     }, [Auth]);
     return <ChatContext.Provider value={state}>{children}</ChatContext.Provider>;
 }
@@ -51,51 +75,52 @@ export const ActiveChatProvider = ({children}: { children: React.ReactChildren |
     const [state, setState] = useState<{ status: boolean, data: IChat } | null>(null);
     const {Auth} = useContext(AuthContext);
     const abortController = new AbortController();
-    const SendMessage = async ({text}: { text: string }) => {
+    const SendMessage = async ({text, file}: { file: any, text: string }) => {
         if (!state?.status || !Auth?.status) return;
         const {
             mission_id,
-            owner,
-            contactus_id,
             cust_chat_id,
             clientpro_cust_id,
-            invoice_id,
+            id,
             csv_id,
+            invoice_id,
             _id,
             project_id,
-            users,
+            contactus_id
         } = state.data;
-
-        console.log(Auth.token)
-        const res = await fetch(EndPoints.SendMessage({
-            token: Auth.token,
-            lang: Auth.app_lang,
-            // version? : string,
-            mission_id: mission_id,
-            owner: owner,
-            contactus_id: contactus_id,
-            cust_chat_id: cust_chat_id,
-            // ip? : string,
-            _id: _id,
-            project_id: project_id,
-            recipient_id: Object.keys(users)[0],
-            clientpro_cust_id: clientpro_cust_id,
-            invoice_id: invoice_id,
-            csv_id: csv_id,
-            message: text
-        }), {
-            method: 'GET',
+        if (file) {
+            const formData = new FormData();
+            formData.append("uploadedFile", file.uri, file.name);
+        }
+        const response = await fetch("https://bull36.com/app/add_chat", {
+            method: 'POST',
+            headers: {},
+            body: toFormData({
+                token: Auth.token,
+                lang: Auth.app_lang,
+                ip: "123",
+                version: "0.1",
+                owner: Auth.id, //Object.keys(state.data.users)[0],
+                message: text,
+                recipient_id: Object.keys(state.data.users).filter(id => id !== Auth.id)[0],
+                _id, id
+                // mission_id, cust_chat_id, clientpro_cust_id, id, csv_id, invoice_id, _id, project_id, contactus_id
+            }),
             redirect: 'follow'
-        }).then(res => res.json());
+        });
+        const res: IChat = response.ok ? await response.json() : null;
+        console.log(res)
+        /** Send Add Message Request attach formdata to body TODO **/
     };
     const Load: ILoad = async (chat: IChat) => {
         if (Auth?.token) {
-            const res = await fetch(EndPoints.GetChat({token: Auth.token, id: chat.id}), {
+            console.log(EndPoints.GetChat({token: Auth.token, id: chat._id["$oid"]}))
+            const res = await fetch(EndPoints.GetChat({token: Auth.token, id: chat._id["$oid"]}), {
                 method: 'GET',
                 redirect: 'follow',
                 signal: abortController.signal
             }).then(res => res.ok ? res.json() : null);
-            console.log("chat", res);
+            console.log("loaded chat", res);
             setState(res);
         }
     }
@@ -103,7 +128,7 @@ export const ActiveChatProvider = ({children}: { children: React.ReactChildren |
         return () => {
             abortController.abort();
         }
-    }, [])
+    }, []);
     return (
         <ActiveChatContext.Provider value={{SendMessage, Load, chat: state}}>{children}</ActiveChatContext.Provider>
     )

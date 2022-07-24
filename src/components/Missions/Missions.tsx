@@ -1,5 +1,5 @@
 import React, {FC, useContext, useEffect, useState} from 'react';
-import {Image, View} from "react-native";
+import {Image, Text, View} from "react-native";
 import {Tab, TabView} from "@rneui/themed";
 import Colors from "@res/colors";
 import {Button} from "@rneui/base";
@@ -9,34 +9,10 @@ import {ActiveChatContext, ChatContext} from "../../../Contexts";
 import {IChat} from "../../../Types";
 import ChatList from "../Chats/ChatList";
 import {useNavigation} from "@react-navigation/native";
+import Spinner from "../Spinner";
 
 interface MissionsProps {
 }
-
-const missions = [
-    {title: "Mission 1"},
-    {title: "Another Mission"},
-    {title: "Mission 3"},
-    {title: "Mission 4"},
-    {title: "Mission 6"},
-    {title: "Mission 6"},
-]
-const chats = [
-    {
-        name: 'Amy Farha',
-        avatar_url: 'https://s3.amazonaws.com/uifaces/faces/twitter/ladylexy/128.jpg',
-        subtitle: 'Vice President'
-    },
-    {
-        name: 'Chris Jackson',
-        avatar_url: 'https://s3.amazonaws.com/uifaces/faces/twitter/adhamdannaway/128.jpg',
-        subtitle: 'Vice Chairman'
-    },
-]
-// const shuffleArray = unshuffled => unshuffled
-//     .map(value => ({value, sort: Math.random()}))
-//     .sort((a, b) => a.sort - b.sort)
-//     .map(({value}) => value);
 
 const Missions: FC<MissionsProps> = () => {
     const [tab, setTab] = React.useState(0);
@@ -53,68 +29,73 @@ const Missions: FC<MissionsProps> = () => {
         })));
     }, [chats])
     return (
-        <View style={{height: '100%'}}>
-            <View style={{
-                display: "flex",
-                flexDirection: "row",
-                justifyContent: "center",
-                width: "100%",
-                paddingLeft: 20,
-                paddingRight: 20
-            }}>
-                <Button disabled={tab === 0} color={"transparent"} onPress={() => setTab(tab - 1)}>
-                    <Image source={ChevronLeft} style={{
-                        width: 25,
-                        height: 25
-                    }}/>
-                </Button>
+        chats?.error ?
+            <Text style={{width: "100%", textAlign: "center", marginTop: "40%", color: Colors.error, fontSize: 20}}>Error
+                Loading Missions</Text> :
+            projects ? <View style={{height: '100%'}}>
                 <View style={{
                     display: "flex",
                     flexDirection: "row",
-                    paddingLeft: 0,
-                    width: "85%",
-                    paddingRight: 0
+                    justifyContent: "center",
+                    width: "100%",
+                    paddingLeft: 20,
+                    paddingRight: 20
                 }}>
-                    <Tab
-                        scrollable={true}
-                        value={tab}
-                        containerStyle={{backgroundColor: "transparent"}}
-                        onChange={(e) => setTab(e)}
-                        indicatorStyle={{
-                            backgroundColor: Colors.primary,
-                            height: 3,
-                        }}
-                        variant="primary">
-                        {projects?.map(({projectId}) => (
-                            <Tab.Item
-                                title={`Project ${projectId}`}
-                                key={`project-${projectId}`}
-                                variant={"primary"}
-                                containerStyle={{backgroundColor: "transparent"}}
-                                titleStyle={{fontSize: 12, color: Colors.black}}
-                            />
-                        ))}
-                    </Tab>
+                    <Button disabled={tab === 0} color={"transparent"} onPress={() => setTab(tab - 1)}>
+                        <Image source={ChevronLeft} style={{
+                            width: 25,
+                            height: 25
+                        }}/>
+                    </Button>
+                    <View style={{
+                        display: "flex",
+                        flexDirection: "row",
+                        paddingLeft: 0,
+                        width: "85%",
+                        paddingRight: 0
+                    }}>
+                        <Tab
+                            scrollable={true}
+                            value={tab}
+                            containerStyle={{backgroundColor: "transparent"}}
+                            onChange={(e) => setTab(e)}
+                            indicatorStyle={{
+                                backgroundColor: Colors.primary,
+                                height: 3,
+                            }}
+                            variant="primary">
+                            {projects?.map(({projectId}) => (
+                                <Tab.Item
+                                    title={`Project ${projectId}`}
+                                    key={`project-${projectId}`}
+                                    variant={"primary"}
+                                    containerStyle={{backgroundColor: "transparent"}}
+                                    titleStyle={{fontSize: 12, color: Colors.black}}
+                                />
+                            ))}
+                        </Tab>
+                    </View>
+                    <Button disabled={tab === projects.length - 1} color={"transparent"}
+                            onPress={() => setTab(tab + 1)}>
+                        <Image source={ChevronRight} style={{
+                            width: 25,
+                            height: 25
+                        }}/>
+                    </Button>
                 </View>
-                <Button disabled={tab === missions.length - 1} color={"transparent"} onPress={() => setTab(tab + 1)}>
-                    <Image source={ChevronRight} style={{
-                        width: 25,
-                        height: 25
-                    }}/>
-                </Button>
-            </View>
-            <TabView value={tab} onChange={setTab} animationType={"spring"}>
-                {projects?.map(({projectId, chats}) => (
-                    <TabView.Item key={`project-${projectId}`} style={{backgroundColor: 'transparent', width: '100%'}}>
-                        <ChatList onItemPress={(chat) => {
-                            if (!Load) return;
-                            Load(chat);
-                            navigation.navigate("Chat", {multi: true});
-                        }} chats={chats}/>
-                    </TabView.Item>
-                ))}
-            </TabView>
-        </View>
+                <TabView value={tab} onChange={setTab} animationType={"spring"}>
+                    {projects?.map(({projectId, chats}) => (
+                        <TabView.Item key={`project-${projectId}`}
+                                      style={{backgroundColor: 'transparent', width: '100%'}}>
+                            <ChatList onItemPress={(chat) => {
+                                if (!Load) return;
+                                Load(chat);
+                                navigation.navigate("Chat", {multi: true});
+                            }} chats={chats}/>
+                        </TabView.Item>
+                    ))}
+                </TabView>
+            </View> : <Spinner/>
     );
 }
 

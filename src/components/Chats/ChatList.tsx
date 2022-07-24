@@ -1,29 +1,41 @@
 import React, {memo} from 'react';
 import {Avatar, ListItem} from "@rneui/themed";
-import {ActivityIndicator, GestureResponderEvent, ScrollView, TouchableHighlight, View} from "react-native";
+import {GestureResponderEvent, ScrollView, TouchableHighlight, View} from "react-native";
 import {AuthContext} from "../../../Contexts";
 import {Chip, Text} from "@rneui/base";
 
 import * as timeago from 'timeago.js';
 import Colors from "../../res/colors";
 import {IChat} from "../../../Types";
+import Spinner from "../Spinner";
 
 type IOnItemPress = (chat: IChat, e: GestureResponderEvent) => void | Promise<any>;
 const ChatList = ({chats, onItemPress}: { onItemPress: IOnItemPress, chats: Array<IChat> | null | undefined }) => {
     const {Auth} = React.useContext(AuthContext);
+
+    console.log(Auth?.token, chats?.map(chat => chat._id["$oid"])); //_id["$oid"]
     return (
         <ScrollView style={{marginBottom: "10%"}}>
             {chats?.length && Auth ? chats.map(chat => {
-                const user = Auth.team_members.find(({id}: { id: string }) => id === Object.keys(chat.users)[0])
-                if (!user) return <React.Fragment/>
+                const users = Object.keys(chat.users).map(_id => Auth.team_members.find(({id}: { id: string }) => id === _id)).filter(a => a);
+                // const user_ids = Object.keys(chat.users);
+                // let user;
+                // for (const id of user_ids) {
+                //     const _user = Auth.team_members.find(({id}: { id: string }) => id === id);
+                //     if (_user) {
+                //         user = _user;
+                //         break;
+                //     }
+                // }
+                if (!users.length) return <React.Fragment key={Math.random()}/>
                 return (
                     <TouchableHighlight underlayColor={"#FAFAFA"} onPress={(e) => {
                         onItemPress(chat, e);
                     }} key={Math.random()}>
                         <ListItem focusable>
-                            <Avatar rounded source={{uri: user.profile_image}}/>
+                            <Avatar rounded source={{uri: users[0].profile_image}}/>
                             <ListItem.Content>
-                                <ListItem.Title>{user.name}</ListItem.Title>
+                                <ListItem.Title>{users[0].name}</ListItem.Title>
                                 <ListItem.Subtitle>{chat.messages[0].type}</ListItem.Subtitle>
                             </ListItem.Content>
                             <View style={{
@@ -46,7 +58,7 @@ const ChatList = ({chats, onItemPress}: { onItemPress: IOnItemPress, chats: Arra
                         </ListItem>
                     </TouchableHighlight>
                 )
-            }) : <View><ActivityIndicator/></View>}
+            }) : <Spinner/>}
         </ScrollView>
     );
 }

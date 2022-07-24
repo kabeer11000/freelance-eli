@@ -4,6 +4,7 @@ export default {
     "tertiary": "#41CB7F",
     white: "#FFFFFF",
     black: "#000000",
+    error: "#D04B49",
     grey: {
         background: "#F1F1F1",
         primary: "#6C7A8B"

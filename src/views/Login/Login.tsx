@@ -16,7 +16,8 @@ interface LoginProps {
 // @ts-ignore
 const LoginComponent: FC<LoginProps> = () => {
     const [checkBox, setCheckBox] = React.useState(true);
-    const [creds, setCreds] = React.useState({username: "jay", password: "pass0364"});
+    const [creds, setCreds] = React.useState({username: "kabeer", password: "A*1NpxSth7KSK0ga"});
+    const [working, setWorking] = React.useState(false);
     const [error, setError] = React.useState(false);
     const {Login} = useContext(AuthContext);
     const navigation = useNavigation();
@@ -58,6 +59,7 @@ const LoginComponent: FC<LoginProps> = () => {
                             blurOnSubmit={true}
                             errorMessage={error ? "Username or Password Incorrect" : ""}
                             renderErrorMessage={error}
+                            disabled={working}
                             containerStyle={{
                                 borderRadius: 10,
                                 height: 50,
@@ -83,6 +85,7 @@ const LoginComponent: FC<LoginProps> = () => {
                             renderErrorMessage={error}
                             blurOnSubmit={true}
                             value={creds.password}
+                            disabled={working}
                             containerStyle={{
                                 borderRadius: 10,
                                 height: 50,
@@ -113,6 +116,7 @@ const LoginComponent: FC<LoginProps> = () => {
                         onLongPress={() => console.log("onLongPress()")}
                         onPress={() => setCheckBox(!checkBox)}
                         size={30}
+                        disabled={working}
                         title={<Text style={{
                             marginLeft: 20
                         }}>{Strings.login_screen_remember_me}</Text>}
@@ -124,11 +128,9 @@ const LoginComponent: FC<LoginProps> = () => {
                         width: '100%',
                         marginTop: "20%"
                     }}>
-                        <Button containerStyle={{
-                            borderRadius: 10
-                        }} onPress={async () => {
+                        <Button disabled={working} containerStyle={{borderRadius: 10}} onPress={async () => {
+                            setWorking(true);
                             try {
-                                console.log("trying to login")
                                 await Login({
                                     username: creds.username,
                                     password: creds.password,
@@ -139,6 +141,7 @@ const LoginComponent: FC<LoginProps> = () => {
                                 console.log("error", e)
                                 setError(true);
                             }
+                            setWorking(false);
                         }} color={Colors.tertiary}>Login</Button>
                     </View>
                     {/*<Text>{Strings.login_screen_remember_me}</Text><CheckBox checked={false}></CheckBox>*/}

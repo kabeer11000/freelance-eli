@@ -1,58 +1,79 @@
 import React, {useContext, useEffect, useState} from 'react'
 import {Actions, Bubble, GiftedChat} from 'react-native-gifted-chat'
 import {ActiveChatContext, AuthContext} from "../../../Contexts";
-import {Button, Icon, Input, Text} from "@rneui/base"
-import {ActivityIndicator, View} from "react-native";
+import {Button, Icon} from "@rneui/base"
+import {ActivityIndicator, Alert, Text, View} from "react-native";
 import Colors from "../../res/colors";
-import {Avatar} from "@rneui/themed";
 import * as ImagePicker from 'expo-image-picker';
-
-// const socket = io("ws://192.168.10.2:3001");
-// console.log(socket);
-// socket.on("connect", console.log)
-const ThemedInput = () => {
-    return <Input/>
-}
+import {Avatar} from "@rneui/themed";
 
 export function ConversationView({navigation, route}) {
     const {Auth} = useContext(AuthContext);
     const {chat, SendMessage} = useContext(ActiveChatContext);
     const {multi} = route;
     const [text, setText] = useState("");
-    const [user, setUser] = useState<{ id: string; user_name: string; name: string; profile_image: string; } | undefined>(undefined);
+    const [users, setUsers] = useState([]);
     const [giftedMessages, setGiftedMessages] = useState([]);
     useEffect(() => {
-        if (Auth && chat?.status) setUser(Auth.team_members.find(user => user.id === Object.keys(chat.data.users)[0]));
-        if (chat?.status && user) setGiftedMessages(chat.data.messages.map(message => ({
-            _id: Math.random(),
-            text: message.message,
-            createdAt: new Date(message.time),
-            user: {
-                _id: user.id,
-                name: user.name,
-                avatar: user.profile_image,
-            },
-        })));
+        if (Auth?.status && chat?.status) {
+            setUsers(Object.keys(chat.data.users).map(_id => {
+                return Auth.team_members.find(({id}: { id: string }) => id === _id) ?? _id === Auth.id ? ({
+                    id: Auth.id,
+                    profile_image: Auth.profile_image,
+                    name: Auth.user_name
+                }) : null
+                // return ({
+                //     _id: Auth.id,
+                //     profile_image: Auth.profile_image,
+                //     name: Auth.user_name
+                // })
+            }).filter(a => a));
+            // const user_ids = Object.keys(chat.data.users);
+            // let user;
+            // for (const id of user_ids) {
+            //     const _user = Auth.team_members.find(({id}: { id: string }) => id === id);
+            //     if (_user) {
+            //         user = _user;
+            //         break;
+            //     }
+            // }
+            // setUser(user);
+        }
+        if (chat?.status) setGiftedMessages(chat.data.messages.map(message => {
+            /** remove chat message user id  **/
+                // const user = users.find(({id}) => id === message.user_id)
+            const user = users.find(({id}) => id === Object.keys(chat.data.users)[0]) || {
+                    id: "unknown",
+                    name: "Unknown",
+                    profile_image: "https://icon-library.com/images/unknown-person-icon/unknown-person-icon-4.jpg"
+                };
+            return ({
+                _id: Math.random(),
+                text: message.message,
+                createdAt: new Date(message.time),
+                user: {
+                    _id: Auth.id,
+                    name: Auth.user_name,
+                    avatar: user.profile_image,
+                },
+            })
+        }).reverse());
     }, [chat]); // Reloads with active chat
     const [image, setImage] = useState<any>();
     const pickImage = async () => {
         // No permissions request is necessary for launching the image library
-        let result = await ImagePicker.launchImageLibraryAsync({
+        const result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ImagePicker.MediaTypeOptions.Images,
             allowsEditing: true,
-            // aspect: [4, 3],
             base64: true,
             quality: 1,
         });
-
-        if (!result.cancelled) {
-            // console.log(result)
-            setImage(result);
-        }
+        if (!result.cancelled) setImage(result);
     };
+    // @ts-ignore
     return (
         <View>
-            {Auth && chat?.status && user ? <View style={{height: "100%"}}>
+            {Auth && chat?.status ? <View style={{height: "100%"}}>
                 <View style={{
                     display: "flex",
                     backgroundColor: Colors.white,
@@ -71,33 +92,37 @@ export function ConversationView({navigation, route}) {
                         justifyContent: "space-between",
                         flexDirection: "row"
                     }}>
-                        <Button onPress={() => {
-                            navigation.goBack()
-                        }} icon={{
-                            name: "arrow-back"
-                        }} containerStyle={{
+                        <Button onPress={() => navigation.goBack()} icon={{name: "arrow-back"}} containerStyle={{
                             width: 50, height: 50,
                             backgroundColor: "transparent"
                         }} color={"transparent"}/>
-                        <Avatar rounded source={{uri: user.profile_image}}/>
-                        <Text style={{
-                            fontSize: 20,
-                            fontWeight: "bold",
-                            textAlign: "center",
-                        }}>{user?.name}</Text>
+                        {/*{console.log(users)}*/}
+                        {users?.map((user, index) => <Avatar key={index} rounded source={{uri: user.profile_image}}/>)}
+                        {users?.map((user, index) => (
+                            // @ts-ignore
+                            <Text key={index} style={{
+                                fontSize: 20,
+                                fontWeight: "bold",
+                                textAlign: "center",
+                            }}>{user?.name}</Text>
+                        ))}
+                        {/*<Avatar rounded source={{uri: users[0].profile_image}}/>*/}
+                        {/*<Text style={{*/}
+                        {/*    fontSize: 20,*/}
+                        {/*    fontWeight: "bold",*/}
+                        {/*    textAlign: "center",*/}
+                        {/*}}>{users[0]?.name}</Text>*/}
                     </View>
                     <View style={{
                         display: "flex",
                         justifyContent: "space-between",
                         flexDirection: "row"
                     }}>
-                        <Button onPress={() => {
-                            navigation.navigate("VideoSDKWebView", {
-                                api_key: "0b360177-d459-4975-b383-aaa65c4a1698",
-                                meeting_id: chat?.data.id,
-                                name: Auth?.user_name
-                            });
-                        }} icon={{name: "videocam"}} containerStyle={{
+                        <Button onPress={() => navigation.navigate("VideoSDKWebView", {
+                            api_key: "0b360177-d459-4975-b383-aaa65c4a1698",
+                            meeting_id: chat?.data.id,
+                            name: Auth?.user_name
+                        })} icon={{name: "videocam"}} containerStyle={{
                             width: 50, height: 50,
                             backgroundColor: "transparent"
                         }} color={"transparent"}/>
@@ -107,9 +132,7 @@ export function ConversationView({navigation, route}) {
                                 meeting_id: chat?.data.id,
                                 name: Auth?.user_name
                             });
-                        }} icon={{
-                            name: "call"
-                        }} containerStyle={{
+                        }} icon={{name: "call"}} containerStyle={{
                             width: 50, height: 50,
                             backgroundColor: "transparent"
                         }} color={"transparent"}/>
@@ -131,7 +154,8 @@ export function ConversationView({navigation, route}) {
                             options={{
                                 ['Send Image']: async () => {
                                     await pickImage();
-                                    console.log(Object.keys(image));
+                                    await Alert.alert("Select " + image.name, "This image will be sent when you send the message");
+                                    await SendMessage({file: image, text: ""});
                                     // console.log(await (await fetch(EndPointsMock.UploadImageTest, {
                                     //     method: "post",
                                     //     body: JSON.stringify({
@@ -143,6 +167,7 @@ export function ConversationView({navigation, route}) {
                             }}
                             icon={() => (<Icon name={'attachment'} size={28} color={Colors.tertiary}/>)}
                             onSend={args => {
+
                             }}
                         />
                     )}
@@ -151,11 +176,12 @@ export function ConversationView({navigation, route}) {
                     alwaysShowSend
                     onInputTextChanged={_text => setText(_text)}
                     onSend={async (messages) => {
-                        await SendMessage({text: messages.at(-1).text});
+                        // console.log([...messages].at(-1));
+                        await SendMessage({text: messages[messages.length - (1)].text});
                         // console.log(giftedMessages.length, messages, [...giftedMessages, messages.at(-1)].length)
                         setGiftedMessages(GiftedChat.append(giftedMessages, messages));
                     }}
-                    user={{_id: Auth?.id, name: Auth?.user_name}}
+                    user={{_id: Auth.id, name: Auth.user_name}}
                 />
             </View> : <View style={{
                 alignItems: 'center',
