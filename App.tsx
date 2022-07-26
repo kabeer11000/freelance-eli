@@ -1,4 +1,4 @@
-import {KeyboardAvoidingView, Platform, StatusBar} from 'react-native';
+import {StatusBar} from 'react-native';
 import React, {useCallback, useContext, useEffect, useState} from "react";
 import * as SplashScreen from 'expo-splash-screen';
 import {NavigationContainer} from "@react-navigation/native";
@@ -56,7 +56,6 @@ export default function App() {
                 setAppIsReady(true);
             }
         }
-
         prepare();
     }, []);
     const onLayoutRootView = useCallback(async () => {
@@ -76,19 +75,19 @@ export default function App() {
         <SafeAreaProvider>
             <NavigationContainer onReady={onLayoutRootView}>
                 <ThemeProvider theme={theme}>
-                    <SafeAreaView style={{backgroundColor: "#fff", minHeight: '100%', width: '100%'}}>
+                    <SafeAreaView style={{flex: 1}}>
                         <AuthProvider>
                             <ChatProvider>
                                 <ActiveChatProvider>
                                     <AuthenticatedNavigator/>
+                                    <StatusBar translucent={true} backgroundColor={"black"}/>
                                 </ActiveChatProvider>
                             </ChatProvider>
                         </AuthProvider>
                     </SafeAreaView>
                 </ThemeProvider>
-                <StatusBar/>
             </NavigationContainer>
-            {Platform.OS === 'android' && <KeyboardAvoidingView behavior="padding" />}
+            {/*{Platform.OS === 'android' && <KeyboardAvoidingView behavior="padding" />}*/}
         </SafeAreaProvider>
     );
 }

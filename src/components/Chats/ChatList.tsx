@@ -12,22 +12,11 @@ import Spinner from "../Spinner";
 type IOnItemPress = (chat: IChat, e: GestureResponderEvent) => void | Promise<any>;
 const ChatList = ({chats, onItemPress}: { onItemPress: IOnItemPress, chats: Array<IChat> | null | undefined }) => {
     const {Auth} = React.useContext(AuthContext);
-
-    console.log(Auth?.token, chats?.map(chat => chat._id["$oid"])); //_id["$oid"]
     return (
-        <ScrollView style={{marginBottom: "10%"}}>
+        <ScrollView style={{marginBottom: "10%"}} contentContainerStyle={{flexGrow: 1}}>
             {chats?.length && Auth ? chats.map(chat => {
-                const users = Object.keys(chat.users).map(_id => Auth.team_members.find(({id}: { id: string }) => id === _id)).filter(a => a);
-                // const user_ids = Object.keys(chat.users);
-                // let user;
-                // for (const id of user_ids) {
-                //     const _user = Auth.team_members.find(({id}: { id: string }) => id === id);
-                //     if (_user) {
-                //         user = _user;
-                //         break;
-                //     }
-                // }
-                if (!users.length) return <React.Fragment key={Math.random()}/>
+                const users = Object.keys(chat.users).filter(a => a).map(_id => Auth.team_members.find(({id}: { id: string }) => id === _id)).filter(a => a);
+                if (!users.length) return null
                 return (
                     <TouchableHighlight underlayColor={"#FAFAFA"} onPress={(e) => {
                         onItemPress(chat, e);

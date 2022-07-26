@@ -1,6 +1,5 @@
 import React, {useState} from 'react';
 import {DevSettings, View} from "react-native";
-import {SafeAreaView} from "react-native-safe-area-context";
 import {BottomSheet, Input} from "@rneui/base";
 // @ts-ignore
 import Icon from "@assets/60083e92-e923-4d81-9a70-0be5d11bb749.png";
@@ -24,13 +23,12 @@ const Home = ({navigation}) => {
     const [tab, setTab] = useState(0);
     const [dialog, setDialog] = useState(false)
     return (
-        <SafeAreaView>
+        <View>
             <View style={{
                 paddingLeft: 20,
                 paddingRight: 20,
                 backgroundColor: Colors.white,
                 paddingBottom: 0,
-                marginTop: "-10%",
                 paddingTop: 0
             }}>
                 <AppHeader/>
@@ -107,7 +105,7 @@ const Home = ({navigation}) => {
                     </ListItem>
                 </View>
             </BottomSheet>
-        </SafeAreaView>
+        </View>
     );
 }
 

@@ -4,11 +4,11 @@
     "slug": "biz1",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/60083e92-e923-4d81-9a70-0be5d11bb749.png",
+    "icon": "./assets/icon-500x500.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/60083e92-e923-4d81-9a70-0be5d11bb749.png",
-      "resizeMode": "contain",
+      "image": "./assets/splash.png",
+      "resizeMode": "cover",
       "backgroundColor": "#ffffff"
     },
     "updates": {
@@ -31,7 +31,7 @@
         "WRITE_EXTERNAL_STORAGE"
       ],
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/icon-500x500.png",
         "backgroundColor": "#FFFFFF"
       },
       "package": "com.biz1.app",

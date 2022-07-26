@@ -2,75 +2,51 @@ import React, {useContext, useEffect, useState} from 'react'
 import {Actions, Bubble, GiftedChat} from 'react-native-gifted-chat'
 import {ActiveChatContext, AuthContext} from "../../../Contexts";
 import {Button, Icon} from "@rneui/base"
-import {ActivityIndicator, Alert, Text, View} from "react-native";
+import {ActivityIndicator, Image, Text, TouchableWithoutFeedback, View} from "react-native";
 import Colors from "../../res/colors";
-import * as ImagePicker from 'expo-image-picker';
 import {Avatar} from "@rneui/themed";
+import Mime from "mime";
+import {ResolveUsers} from "./utils";
+import Spinner from "../Spinner";
+import {pickImageAsync, takePictureAsync} from "./mediaUtils";
+import {Spring} from "../Animations/Spring";
 
 export function ConversationView({navigation, route}) {
     const {Auth} = useContext(AuthContext);
     const {chat, SendMessage} = useContext(ActiveChatContext);
-    const {multi} = route;
-    const [text, setText] = useState("");
-    const [users, setUsers] = useState([]);
-    const [giftedMessages, setGiftedMessages] = useState([]);
+    const [state, setState] = useState({
+        text: "",
+        users: [],
+        formattedMessages: [],
+        image: null,
+        working: false
+    });
     useEffect(() => {
-        if (Auth?.status && chat?.status) {
-            setUsers(Object.keys(chat.data.users).map(_id => {
-                return Auth.team_members.find(({id}: { id: string }) => id === _id) ?? _id === Auth.id ? ({
-                    id: Auth.id,
-                    profile_image: Auth.profile_image,
-                    name: Auth.user_name
-                }) : null
-                // return ({
-                //     _id: Auth.id,
-                //     profile_image: Auth.profile_image,
-                //     name: Auth.user_name
-                // })
-            }).filter(a => a));
-            // const user_ids = Object.keys(chat.data.users);
-            // let user;
-            // for (const id of user_ids) {
-            //     const _user = Auth.team_members.find(({id}: { id: string }) => id === id);
-            //     if (_user) {
-            //         user = _user;
-            //         break;
-            //     }
-            // }
-            // setUser(user);
-        }
-        if (chat?.status) setGiftedMessages(chat.data.messages.map(message => {
+        if (!Auth?.status || !chat?.status) return;
+        const users = ResolveUsers(Auth, Object.keys(chat.data.users)) || [];
+        const messages = chat.data.messages.map(message => {
             /** remove chat message user id  **/
-                // const user = users.find(({id}) => id === message.user_id)
             const user = users.find(({id}) => id === Object.keys(chat.data.users)[0]) || {
-                    id: "unknown",
-                    name: "Unknown",
-                    profile_image: "https://icon-library.com/images/unknown-person-icon/unknown-person-icon-4.jpg"
-                };
+                id: "unknown",
+                name: "Unknown",
+                profile_image: "https://icon-library.com/images/unknown-person-icon/unknown-person-icon-4.jpg"
+            };
+            const fileType = Mime.getType(message.file_url);
             return ({
                 _id: Math.random(),
                 text: message.message,
-                createdAt: new Date(message.time),
+                createdAt: new Date(message.time.slice(-2)),
+                image: fileType?.split("/")[0] === "image" ? message.file_url : undefined,
+                video: fileType?.split("/")[0] === "video" ? message.file_url : undefined,
                 user: {
                     _id: Auth.id,
                     name: Auth.user_name,
                     avatar: user.profile_image,
                 },
             })
-        }).reverse());
-    }, [chat]); // Reloads with active chat
-    const [image, setImage] = useState<any>();
-    const pickImage = async () => {
-        // No permissions request is necessary for launching the image library
-        const result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
-            allowsEditing: true,
-            base64: true,
-            quality: 1,
-        });
-        if (!result.cancelled) setImage(result);
-    };
-    // @ts-ignore
+        }).reverse();
+        setState({...state, users, formattedMessages: messages});
+    }, [chat]);
     return (
         <View>
             {Auth && chat?.status ? <View style={{height: "100%"}}>
@@ -82,7 +58,7 @@ export function ConversationView({navigation, route}) {
                     height: 60,
                     zIndex: 999,
                     top: 0,
-                    paddingTop: 10,
+                    paddingTop: 12.5,
                     justifyContent: "space-between",
                     flexDirection: "row"
                 }}>
@@ -94,24 +70,38 @@ export function ConversationView({navigation, route}) {
                     }}>
                         <Button onPress={() => navigation.goBack()} icon={{name: "arrow-back"}} containerStyle={{
                             width: 50, height: 50,
+                            marginRight: 20,
                             backgroundColor: "transparent"
                         }} color={"transparent"}/>
-                        {/*{console.log(users)}*/}
-                        {users?.map((user, index) => <Avatar key={index} rounded source={{uri: user.profile_image}}/>)}
-                        {users?.map((user, index) => (
-                            // @ts-ignore
-                            <Text key={index} style={{
-                                fontSize: 20,
-                                fontWeight: "bold",
-                                textAlign: "center",
-                            }}>{user?.name}</Text>
-                        ))}
-                        {/*<Avatar rounded source={{uri: users[0].profile_image}}/>*/}
-                        {/*<Text style={{*/}
-                        {/*    fontSize: 20,*/}
-                        {/*    fontWeight: "bold",*/}
-                        {/*    textAlign: "center",*/}
-                        {/*}}>{users[0]?.name}</Text>*/}
+                        {state.users.filter((user: {
+                            "id": string,
+                            "user_name": string,
+                            "name": string,
+                            "profile_image": string
+                        }) => user.id !== Auth.id).map((user, index) => <Avatar key={index} rounded containerStyle={{
+                            marginLeft: -10,
+                            borderWidth: 1,
+                            borderColor: "black"
+                        }} source={{uri: user.profile_image}}/>)}
+                        <View style={{
+                            display: "flex",
+                            marginLeft: 20,
+                            justifyContent: "space-between",
+                            flexDirection: "row"
+                        }}>
+                            {state.users.filter((user: {
+                                "id": string,
+                                "user_name": string,
+                                "name": string,
+                                "profile_image": string
+                            }) => user.id !== Auth.id).map((user, index) => (
+                                <Text key={index} style={{
+                                    fontSize: 20,
+                                    fontWeight: "bold",
+                                    textAlign: "center",
+                                }}>{user?.name}{(index < state.users.length - 2) && state.users.length > 2 ? "," : ""}</Text>
+                            ))}
+                        </View>
                     </View>
                     <View style={{
                         display: "flex",
@@ -126,13 +116,11 @@ export function ConversationView({navigation, route}) {
                             width: 50, height: 50,
                             backgroundColor: "transparent"
                         }} color={"transparent"}/>
-                        <Button onPress={() => {
-                            navigation.navigate("VideoSDKWebView", {
-                                api_key: "0b360177-d459-4975-b383-aaa65c4a1698",
-                                meeting_id: chat?.data.id,
-                                name: Auth?.user_name
-                            });
-                        }} icon={{name: "call"}} containerStyle={{
+                        <Button onPress={() => navigation.navigate("VideoSDKWebView", {
+                            api_key: "0b360177-d459-4975-b383-aaa65c4a1698",
+                            meeting_id: chat?.data.id,
+                            name: Auth?.user_name
+                        })} icon={{name: "call"}} containerStyle={{
                             width: 50, height: 50,
                             backgroundColor: "transparent"
                         }} color={"transparent"}/>
@@ -141,6 +129,7 @@ export function ConversationView({navigation, route}) {
                 <GiftedChat
                     messagesContainerStyle={{marginTop: 25, paddingBottom: 25}}
                     renderUsernameOnMessage={true}
+                    disableComposer={state.working}
                     renderBubble={props => (
                         <Bubble
                             {...props}
@@ -148,57 +137,69 @@ export function ConversationView({navigation, route}) {
                             wrapperStyle={{left: {backgroundColor: Colors.tertiary}}}
                         />
                     )}
-                    renderActions={(props) => (
-                        <Actions
-                            {...props}
-                            options={{
-                                ['Send Image']: async () => {
-                                    await pickImage();
-                                    await Alert.alert("Select " + image.name, "This image will be sent when you send the message");
-                                    await SendMessage({file: image, text: ""});
-                                    // console.log(await (await fetch(EndPointsMock.UploadImageTest, {
-                                    //     method: "post",
-                                    //     body: JSON.stringify({
-                                    //         image: image,
-                                    //         name: image.uri.split("/").at(-1)
-                                    //     })
-                                    // })).json());
-                                },
-                            }}
-                            icon={() => (<Icon name={'attachment'} size={28} color={Colors.tertiary}/>)}
-                            onSend={args => {
-
-                            }}
-                        />
-                    )}
-                    messages={giftedMessages}
-                    text={text}
+                    renderActions={props => <Actions
+                        {...props}
+                        options={{
+                            'Choose From Library': async () => {
+                                setState({...state, image: await pickImageAsync(), text: " "})
+                            },
+                            'Take Picture': async () => {
+                                setState({...state, image: await takePictureAsync(), text: " "})
+                            },
+                            'Cancel': async () => {
+                            },
+                        }}
+                        icon={() => (<Icon disabled={!!state.image} name={'add'} size={28} color={Colors.tertiary}/>)}
+                    />}
+                    messages={state.formattedMessages}
+                    text={state.text}
                     alwaysShowSend
-                    onInputTextChanged={_text => setText(_text)}
+                    onInputTextChanged={text => setState({...state, text})}
                     onSend={async (messages) => {
-                        // console.log([...messages].at(-1));
-                        await SendMessage({text: messages[messages.length - (1)].text});
-                        // console.log(giftedMessages.length, messages, [...giftedMessages, messages.at(-1)].length)
-                        setGiftedMessages(GiftedChat.append(giftedMessages, messages));
+                        setState({...state, working: true});
+                        messages[messages.length - (1)] = {...messages[messages.length - (1)], image: state.image?.uri};
+                        await SendMessage(state.text, state.image);
+                        setState({
+                            ...state,
+                            formattedMessages: GiftedChat.append(state.formattedMessages, messages),
+                            image: null,
+                            text: "",
+                            working: false
+                        });
                     }}
                     user={{_id: Auth.id, name: Auth.user_name}}
                 />
-            </View> : <View style={{
-                alignItems: 'center',
-                justifyContent: 'center',
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                backgroundColor: '#fff',
-                height: '100%',
-                width: '100%'
-            }}>
-                <ActivityIndicator size="large" color="#f29900"/>
-            </View>
+                {state.image ?
+                    <Spring>
+                        <TouchableWithoutFeedback onPress={() => setState({...state, image: null})}>
+                            <View style={{
+                                position: "absolute",
+                                left: 10,
+                                bottom: 55,
+                                zIndex: 999,
+                            }}>
+                                <Image style={{width: 100, height: 100}} source={{uri: state.image.uri}}/>
+                                <View style={{
+                                    width: 100,
+                                    height: 100,
+                                    position: "absolute",
+                                    backgroundColor: "rgba(0, 0, 0, 0.5)",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center"
+                                }}>
+                                    {state.working ? <ActivityIndicator/> :
+                                        <Icon size={40} color={"white"} name={"close"}/>}
+                                </View>
+                            </View>
+                        </TouchableWithoutFeedback>
+                    </Spring>
+                    : null}
+            </View> : <Spinner relative={true}/>
             }
         </View>
 
     )
 }
 
-export default ConversationView
+export default ConversationView;
