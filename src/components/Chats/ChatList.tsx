@@ -1,4 +1,4 @@
-import React, {memo} from 'react';
+import React from 'react';
 import {Avatar, ListItem} from "@rneui/themed";
 import {GestureResponderEvent, ScrollView, TouchableHighlight, View} from "react-native";
 import {AuthContext} from "../../../Contexts";
@@ -13,7 +13,7 @@ type IOnItemPress = (chat: IChat, e: GestureResponderEvent) => void | Promise<an
 const ChatList = ({chats, onItemPress}: { onItemPress: IOnItemPress, chats: Array<IChat> | null | undefined }) => {
     const {Auth} = React.useContext(AuthContext);
     return (
-        <ScrollView style={{marginBottom: "10%"}} contentContainerStyle={{flexGrow: 1}}>
+        <ScrollView nestedScrollEnabled style={{flexGrow: 1}}>
             {chats?.length && Auth ? chats.map(chat => {
                 const users = Object.keys(chat.users).filter(a => a).map(_id => Auth.team_members.find(({id}: { id: string }) => id === _id)).filter(a => a);
                 if (!users.length) return null
@@ -33,14 +33,10 @@ const ChatList = ({chats, onItemPress}: { onItemPress: IOnItemPress, chats: Arra
                                 justifyContent: "space-between",
                                 width: "35%"
                             }}>
-                                <Text style={{
-                                    marginTop: "5%",
-                                    color: Colors.grey.primary
-                                }}>{timeago.format(chat.last_update, 'en_US')}</Text>
-                                <Chip containerStyle={{
-                                    height: 35, width: 35,
-                                    margin: 0
-                                }} color={Colors.tertiary}>
+                                <Text style={{marginTop: "5%", color: Colors.grey.primary}}>
+                                    {timeago.format(chat.last_update, 'en_US')}
+                                </Text>
+                                <Chip containerStyle={{height: 35, width: 35, margin: 0}} color={Colors.tertiary}>
                                     <Text>{chat.messages.length}</Text>
                                 </Chip>
                             </View>
@@ -52,4 +48,4 @@ const ChatList = ({chats, onItemPress}: { onItemPress: IOnItemPress, chats: Arra
     );
 }
 
-export default memo(ChatList);
+export default (ChatList);

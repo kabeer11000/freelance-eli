@@ -23,42 +23,24 @@ const LoginComponent: FC<LoginProps> = () => {
     const navigation = useNavigation();
     return (
         <View style={{
-            backgroundColor: "white"
+            backgroundColor: "white",
+            paddingVertical: "10%",
+            paddingHorizontal: 20,
+            height: "100%"
         }}>
-            <View style={{
-                display: "flex",
-                flexDirection: "row",
-                justifyContent: "center",
-                height: 100,
-                flexGrow: 1,
-                marginTop: "10%",
-                width: "100%"
-            }}><Image style={{
-                height: 200,
-                width: 200
-            }} source={AppIcon}/></View>
-            <View style={{
-                padding: 20,
-                height: "100%",
-                marginTop: "30%"
-                // display: "flex",
-                // flexDirection: "column",
-            }}>
+            <View style={{display: "flex", flexDirection: "row", justifyContent: "center"}}>
+                <Image style={{height: 150, width: 150}} source={AppIcon}/>
+            </View>
+            <View style={{marginTop: "10%"}}>
                 <Text h3>{Strings.login_screen_login}</Text>
-                <View style={{
-                    marginTop: "15%"
-                }}>
-                    <View style={{
-                        display: "flex",
-                    }}>
-                        <Text style={{
-                            marginBottom: 10
-                        }}>{Strings.login_screen_username}</Text>
+                <Text style={{color: "red"}}>{error ? "Username or Password Incorrect" : ""}</Text>
+                <View style={{marginTop: "10%"}}>
+                    <View style={{display: "flex"}}>
+                        <Text style={{marginBottom: 10}}>{Strings.login_screen_username}</Text>
                         <Input
                             value={creds.username}
                             blurOnSubmit={true}
-                            errorMessage={error ? "Username or Password Incorrect" : ""}
-                            renderErrorMessage={error}
+                            autoFocus
                             disabled={working}
                             containerStyle={{
                                 borderRadius: 10,
@@ -72,17 +54,9 @@ const LoginComponent: FC<LoginProps> = () => {
                             onChangeText={username => setCreds({...creds, username: username})}
                         />
                     </View>
-                    <View style={{
-                        marginTop: "10%",
-                        display: "flex",
-                    }}>
-                        <Text style={{
-                            marginBottom: 10
-                        }}>{Strings.login_screen_password}</Text>
+                    <View style={{marginTop: "10%", display: "flex"}}>
+                        <Text style={{marginBottom: 10}}>{Strings.login_screen_password}</Text>
                         <Input
-
-                            errorMessage={error ? "Username or Password Incorrect" : ""}
-                            renderErrorMessage={error}
                             blurOnSubmit={true}
                             value={creds.password}
                             disabled={working}
@@ -91,43 +65,38 @@ const LoginComponent: FC<LoginProps> = () => {
                                 height: 50,
                                 backgroundColor: Colors.grey.background
                             }}
-                            inputContainerStyle={{
-                                paddingTop: 5,
-                                borderBottomWidth: 0
-                            }}
+                            inputContainerStyle={{paddingTop: 5, borderBottomWidth: 0}}
                             secureTextEntry
                             onChangeText={password => setCreds({...creds, password: password})}
                         />
                     </View>
-                    <CheckBox
-                        style={{
-                            padding: 0,
-                            margin: 0,
-                            marginTop: 20
-                        }}
-                        checked={checkBox}
-                        checkedColor="#0F0"
-                        containerStyle={{ width: "100%" }}
-                        onLongIconPress={() =>
-                            console.log("onLongIconPress()")
-                        }
-                        uncheckedIcon={<Icon name={"check_box_outline_blank"}/>}
-                        checkedIcon={<Icon color={Colors.tertiary} name={"done"}/>}
-                        onLongPress={() => console.log("onLongPress()")}
-                        onPress={() => setCheckBox(!checkBox)}
-                        size={30}
-                        disabled={working}
-                        title={<Text style={{
-                            marginLeft: 20
-                        }}>{Strings.login_screen_remember_me}</Text>}
-                        textStyle={{}}
-                        titleProps={{}}
-                        uncheckedColor="#F00"
-                    />
                     <View style={{
-                        width: '100%',
-                        marginTop: "20%"
+                        width: "100%",
+                        marginVertical: 20,
+                        display: "flex",
+                        justifyContent: "center",
+                        flexDirection: "row"
                     }}>
+                        <CheckBox
+                            checked={checkBox}
+                            checkedColor="#0F0"
+                            containerStyle={{margin: 0, padding: 0, width: "100%"}}
+                            uncheckedIcon={<Icon
+                                name={"checkbox-blank-outline"} type={"material-community"}/>}
+                            checkedIcon={<Icon
+                                type={"material-community"} color={Colors.tertiary} name={"checkbox-marked"}/>}
+                            onLongPress={() => console.log("onLongPress()")}
+                            onPress={() => setCheckBox(!checkBox)}
+                            size={20}
+                            disabled={working}
+                            title={<Text style={{
+                                marginLeft: 20, fontWeight: "200"
+                            }}>{Strings.login_screen_remember_me}</Text>}
+                            textStyle={{}}
+                            titleProps={{}}
+                            uncheckedColor="#F00"
+                        /></View>
+                    <View style={{width: '100%', marginTop: "20%"}}>
                         <Button disabled={working} containerStyle={{borderRadius: 10}} onPress={async () => {
                             setWorking(true);
                             try {
@@ -144,7 +113,6 @@ const LoginComponent: FC<LoginProps> = () => {
                             setWorking(false);
                         }} color={Colors.tertiary}>Login</Button>
                     </View>
-                    {/*<Text>{Strings.login_screen_remember_me}</Text><CheckBox checked={false}></CheckBox>*/}
                 </View>
             </View>
         </View>

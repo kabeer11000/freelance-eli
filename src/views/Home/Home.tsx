@@ -1,9 +1,9 @@
 import React, {useState} from 'react';
-import {DevSettings, View} from "react-native";
+import {DevSettings, Dimensions, View} from "react-native";
 import {BottomSheet, Input} from "@rneui/base";
 // @ts-ignore
 import Icon from "@assets/60083e92-e923-4d81-9a70-0be5d11bb749.png";
-import {ListItem, Tab, TabView} from "@rneui/themed";
+import {ListItem,} from "@rneui/themed";
 // @ts-ignore
 import Colors from "@res/colors";
 // @ts-ignore
@@ -15,10 +15,34 @@ import Calls from "@components/Calls/Calls";
 import Strings from "@res/strings";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import AppHeader from "@components/Header/Header"
+import {SceneMap, TabBar, TabView} from 'react-native-tab-view';
 
 const HomeHeader = () => {
-
 }
+
+const renderScene = SceneMap({
+    Chats: Chats,
+    Missions: Missions,
+});
+const TabContainer = () => {
+    const [index, setIndex] = React.useState(0);
+    const [routes] = React.useState([
+        {key: 'Chats', title: 'Chats'},
+        {key: 'Missions', title: 'Missions'},
+    ]);
+    return <TabView
+        lazy
+        renderTabBar={(props) => <TabBar style={{
+            backgroundColor: "white",
+        }} labelStyle={{color: "black"}} indicatorStyle={{backgroundColor: Colors.tertiary}} {...props}/>}
+        style={{flex: 1, height: "100%"}}
+        navigationState={{index, routes}}
+        renderScene={renderScene}
+        onIndexChange={setIndex}
+        initialLayout={{width: "100%", height: "100%", flex: 1,}}
+    />
+}
+
 const Home = ({navigation}) => {
     const [tab, setTab] = useState(0);
     const [dialog, setDialog] = useState(false)
@@ -29,10 +53,11 @@ const Home = ({navigation}) => {
                 paddingRight: 20,
                 backgroundColor: Colors.white,
                 paddingBottom: 0,
+                height: 125,
                 paddingTop: 0
             }}>
                 <AppHeader/>
-                <View style={{display: "flex",}}>
+                <View style={{display: "flex"}}>
                     <Input
                         placeholder={Strings.search_bar_search}
                         blurOnSubmit={true}
@@ -46,51 +71,13 @@ const Home = ({navigation}) => {
                         leftIcon={{type: 'material', name: 'search'}}
                     />
                 </View>
-                <View style={{
-                    display: "flex",
-                    borderBottomWidth: 1,
-                    borderBottomColor: Colors.grey.background
-                }}>
-                    <Tab
-                        value={tab}
-                        containerStyle={{backgroundColor: Colors.white}}
-                        onChange={(e) => setTab(e)}
-                        indicatorStyle={{
-                            backgroundColor: Colors.tertiary,
-                            height: 3,
-                        }}
-                        variant="primary">
-                        <Tab.Item
-                            title={Strings.menu_chats}
-                            containerStyle={{backgroundColor: Colors.white}}
-                            titleStyle={{fontSize: 12, color: Colors.black}}
-                        />
-                        <Tab.Item
-                            title={Strings.menu_missions}
-                            containerStyle={{backgroundColor: Colors.white}}
-                            titleStyle={{fontSize: 12, color: Colors.black}}
-                        />
-                        {/*<Tab.Item*/}
-                        {/*    title={Strings.menu_calls}*/}
-                        {/*    containerStyle={{backgroundColor: Colors.white}}*/}
-                        {/*    titleStyle={{fontSize: 12, color: Colors.black}}*/}
-                        {/*/>*/}
-                    </Tab>
-                </View>
             </View>
-            <View style={{height: '100%'}}>
-                <TabView value={tab} onChange={setTab} animationType={"spring"}>
-                    <TabView.Item style={{backgroundColor: 'transparent', width: '100%'}}>
-                        <View><Chats/></View>
-                    </TabView.Item>
-                    <TabView.Item style={{backgroundColor: 'transparent', width: '100%'}}>
-                        <View><Missions/></View>
-                    </TabView.Item>
-                    {/*<TabView.Item style={{backgroundColor: 'transparent', width: '100%'}}>*/}
-                    {/*    <View><Calls/></View>*/}
-                    {/*</TabView.Item>*/}
-                </TabView>
-            </View>
+            <View style={{
+                flex: 1,
+                flexGrow: 1,
+                minHeight: Dimensions.get("window").height - 125,
+                display: "flex",
+            }}><TabContainer/></View>
             <BottomSheet modalProps={{}} onBackdropPress={() => setDialog(false)} isVisible={dialog}>
                 <View style={{backgroundColor: Colors.white}}>
                     <ListItem onPress={async () => {

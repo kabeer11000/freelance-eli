@@ -6,3 +6,9 @@ export const ResolveUsers = (Auth, ids) => {
         }) : null)
     ).filter(a => a)
 }
+
+let c = {};
+export const consoleCount = (arg) => {
+    c[arg] = c[arg] ? (c[arg] + 1) : 0;
+    console.log(c[arg], arg)
+}

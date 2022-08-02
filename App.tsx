@@ -11,7 +11,10 @@ import Login from "./src/views/Login/Login";
 import {createTheme, ThemeProvider} from "@rneui/themed";
 import VideoSDKWebView from "./src/components/VideoSDKWebView/VideoSDKWebView";
 import Search from "./src/views/Search/Search";
+import {Logs} from "expo";
 
+
+Logs.enableExpoCliLogging();
 export const Stack = createNativeStackNavigator();
 
 const AuthenticatedNavigator = () => {
@@ -75,7 +78,7 @@ export default function App() {
         <SafeAreaProvider>
             <NavigationContainer onReady={onLayoutRootView}>
                 <ThemeProvider theme={theme}>
-                    <SafeAreaView style={{flex: 1}}>
+                    <SafeAreaView style={{flex: 1, backgroundColor: "white"}}>
                         <AuthProvider>
                             <ChatProvider>
                                 <ActiveChatProvider>

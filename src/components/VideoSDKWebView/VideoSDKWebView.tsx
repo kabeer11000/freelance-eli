@@ -36,10 +36,10 @@ const Spinner = () => (
 const VideoSDKWebView: FC<VideoSDKWebViewProps> = ({navigation, route}) => {
     const {api_key, meeting_id, name, title} = route.params;
     const [hasPermission, setHasPermission] = useState(null);
-    const [type, setType] = useState(Camera.Constants.Type.back);
     const webViewRef = useRef(null)
     const linkTo = useLinkTo();
     const [meetingEnded, setMeetingEnded] = useState(false);
+    const [loaded, setLoaded] = useState(false)
     useEffect(() => {
         (async () => {
             const {status: cameraStatus} = await Camera.requestCameraPermissionsAsync();
@@ -62,13 +62,7 @@ const VideoSDKWebView: FC<VideoSDKWebViewProps> = ({navigation, route}) => {
     if (hasPermission === false) {
         return <Text>No access to camera</Text>;
     }
-
-    // console.log(require("../../../assets/video-sdk-webview-contents/index.html"))
-
-    // const [state, setState] = useState({isLoaded:false});
-    if (meetingEnded) return <View style={{
-        display: "flex",
-    }}><Text h2>This meeting has ended</Text></View>;
+    if (meetingEnded) return <View style={{display: "flex"}}><Text h2>This meeting has ended</Text></View>;
     console.log(`https://docs.kabeercloud.tk/tests/freelance-project-videosdk/index.html?api_key=${api_key}&meeting_id=${meeting_id}&name=${name}`)
     return (
         <SafeAreaView>
@@ -98,19 +92,14 @@ const VideoSDKWebView: FC<VideoSDKWebViewProps> = ({navigation, route}) => {
                     display: "flex",
                     width: "50%",
                     justifyContent: "flex-start",
-                    flexDirection: "row"
+                    flexDirection: "row",
+                    elevation: 5
                 }}>
-                    <Button onPress={() => {
-                        navigation.goBack()
-                    }} icon={{
-                        name: "arrow-back"
-                    }} containerStyle={{
+                    <Button onPress={() => navigation.goBack()} icon={{name: "arrow-back"}} containerStyle={{
                         width: 50, height: 50,
                         backgroundColor: "transparent"
                     }} color={"transparent"}/>
-                    <Text h4 style={{
-                        marginLeft: 30
-                    }}>
+                    <Text h4 style={{marginLeft: 30}}>
                         {title ?? "On Call"}
                     </Text>
                 </View>
@@ -119,6 +108,8 @@ const VideoSDKWebView: FC<VideoSDKWebViewProps> = ({navigation, route}) => {
                 <WebView
                     mixedContentMode={"always"}
                     bounces={true}
+                    onLoad={() => setLoaded(true)}
+                    containerStyle={loaded ? {} : {width: 0, height: 0}}
                     allowsInlineMediaPlayback
                     ref={webViewRef}
                     javaScriptEnabled
@@ -139,6 +130,7 @@ const VideoSDKWebView: FC<VideoSDKWebViewProps> = ({navigation, route}) => {
                             linkTo("/Home");
                             setMeetingEnded(true);
                         }
+                        if (e.nativeEvent.data === "LOADED_EVERYTHING") setLoaded(true);
                     }}
                     originWhitelist={['*']}
                     source={{uri: `https://docs.kabeercloud.tk/tests/freelance-project-videosdk/index.html?api_key=${api_key}&meeting_id=${meeting_id}&name=${name}`}}

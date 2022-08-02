@@ -13,18 +13,17 @@ export const AuthContext = createContext<{ Auth: IAuthContextObject | null | und
 });
 export const AuthProvider = ({children}: { children: React.ReactChildren | React.ReactNode }) => {
     const [Auth, setAuth]: [IAuthContextObject | null | undefined, any] = useState();
-    const abortController = new AbortController()
+    const abortController = new AbortController();
     const Login = async ({username, password}: ILoginFunctionInterface) => {
         const response = await fetch(EndPoints.Login({username, password, ip: "123", lang: "en", version: "0.1"}), {
             method: 'GET',
             signal: abortController.signal,
         });
         const user: IAuthContextObject | null = response.ok ? await response.json() : null;
-        // console.log(user);
         if (user && user.status) return setAuth({
             ...user,
             token: "YIRQGWLH169WHKP23642"
-        }); /** , token: "YIRQGWLH169WHKP23642"  heard Coded token was used to send chat messages **/
+        }); /** , token: "YIRQGWLH169WHKP23642" heard Coded token was used to send chat messages **/
         else throw new Error("User Response Null");
     }
     useEffect(() => {
@@ -32,34 +31,38 @@ export const AuthProvider = ({children}: { children: React.ReactChildren | React
     }, []);
     return <AuthContext.Provider value={{Auth, Login}}>{children}</AuthContext.Provider>
 };
-
-export const ChatContext = createContext<{ status: boolean, error?: boolean, fuse: Fuse, data: Array<IChat> | null | undefined } | null>(null);
+type LoadChatsFunction = (a: { page: string | number }) => any
+export const ChatContext = createContext<{ status: boolean, error?: boolean, LoadChats: LoadChatsFunction, fuse: Fuse, data: Array<IChat> | null | undefined } | null>(null);
 export const ChatProvider = ({children}: { children: React.ReactChildren | React.ReactNode }) => {
     const [state, setState] = useState<{ status: boolean, error?: boolean, fuse: Fuse, data: Array<IChat> | null | undefined } | null>(null);
     const {Auth} = useContext(AuthContext);
     const abortController = new AbortController();
-    useEffect(() => {
-        // if (Auth?.token) console.log(EndPoints.GetChats({token: Auth.token, page: "1"}))
-        if (Auth?.token) fetch(EndPoints.GetChats({token: Auth.token, page: "1"}), {
+    const LoadChats: LoadChatsFunction = ({page,}) => {
+        if (Auth?.token) fetch(EndPoints.GetChats({token: Auth.token, page: page}), {
             method: 'GET',
             signal: abortController.signal,
             redirect: 'follow'
         }).then(res => res.ok ? res.json() : null).then(res => {
             if (!res.status) return setState({
+                ...state,
                 status: false,
                 fuse: null,
                 data: null,
                 error: true
             });
+            console.log(res);
             const fuse = new Fuse(res.data, {
                 includeScore: true,
                 keys: ["messages.message"],
             });
             setState({...res, fuse: fuse});
         });
+    }
+    useEffect(() => {
+        LoadChats({page: "1"});
         return () => abortController.abort();
     }, [Auth]);
-    return <ChatContext.Provider value={state}>{children}</ChatContext.Provider>;
+    return <ChatContext.Provider value={{...state, LoadChats: LoadChats}}>{children}</ChatContext.Provider>;
 }
 type ISendMessage = (text, image: any) => Promise<void>;
 type ILoad = (chat: IChat) => Promise<void>;
@@ -119,9 +122,7 @@ export const ActiveChatProvider = ({children}: { children: React.ReactChildren |
 }
 
 
-
-
-
+// assets/res/mipmap-xxxhdpi/ic_launcher_adaptive_fore.png
 
 
 
