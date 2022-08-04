@@ -31,7 +31,7 @@ export const AuthProvider = ({children}: { children: React.ReactChildren | React
     }, []);
     return <AuthContext.Provider value={{Auth, Login}}>{children}</AuthContext.Provider>
 };
-type LoadChatsFunction = (a: { page: string | number }) => any
+type LoadChatsFunction = (a: { page: string | number }) => any;
 export const ChatContext = createContext<{ status: boolean, error?: boolean, LoadChats: LoadChatsFunction, fuse: Fuse, data: Array<IChat> | null | undefined } | null>(null);
 export const ChatProvider = ({children}: { children: React.ReactChildren | React.ReactNode }) => {
     const [state, setState] = useState<{ status: boolean, error?: boolean, fuse: Fuse, data: Array<IChat> | null | undefined } | null>(null);
@@ -50,7 +50,7 @@ export const ChatProvider = ({children}: { children: React.ReactChildren | React
                 data: null,
                 error: true
             });
-            console.log(res);
+            console.log("biz1.contexts.get-chats: ", res.data.length);
             const fuse = new Fuse(res.data, {
                 includeScore: true,
                 keys: ["messages.message"],
@@ -65,7 +65,7 @@ export const ChatProvider = ({children}: { children: React.ReactChildren | React
     return <ChatContext.Provider value={{...state, LoadChats: LoadChats}}>{children}</ChatContext.Provider>;
 }
 type ISendMessage = (text, image: any) => Promise<void>;
-type ILoad = (chat: IChat) => Promise<void>;
+type ILoad = (chat: IChat, object?) => Promise<void>;
 export const ActiveChatContext = createContext<{ Load: ILoad, SendMessage: ISendMessage, chat: { status: boolean, data: IChat } | null } | null>(null);
 export const ActiveChatProvider = ({children}: { children: React.ReactChildren | React.ReactNode }) => {
     const [state, setState] = useState<{ status: boolean, data: IChat } | null>(null);
@@ -73,10 +73,8 @@ export const ActiveChatProvider = ({children}: { children: React.ReactChildren |
     const abortController = new AbortController();
 
     const SendMessage = async (text: string, file: any) => {
-        if (!state?.status || !Auth?.status) return;
-        const {
-            _id,
-        } = state.data;
+        if ((!state?.status) || !Auth?.status) return;
+        let _id = state.data._id;
         const formData = toFormData({
             token: Auth.token,
             lang: Auth.app_lang,
@@ -85,7 +83,7 @@ export const ActiveChatProvider = ({children}: { children: React.ReactChildren |
             owner: Auth.id, //Object.keys(state.data.users)[0],
             message: text || "",
             recipient_id: Object.keys(state.data.users).filter(id => id !== Auth.id)[0],
-            _id,
+            _id: _id,
         });
         if (file) formData.append("uploadedFile", {
             uri: file.uri,
@@ -101,11 +99,12 @@ export const ActiveChatProvider = ({children}: { children: React.ReactChildren |
             redirect: 'follow'
         });
         const res: IChat = response.ok ? await response.json() : null;
+        return res
         /** Send Add Message Request attach formdata to body TODO **/
     };
-    const Load: ILoad = async (chat: IChat) => {
+    const Load: ILoad = async (chat: IChat, {oid} = {oid: true}) => {
         if (Auth?.token) {
-            const res = await fetch(EndPoints.GetChat({token: Auth.token, id: chat._id["$oid"]}), {
+            const res = await fetch(EndPoints.GetChat({token: Auth.token, id: oid ? chat._id["$oid"] : chat._id}), {
                 method: 'GET',
                 redirect: 'follow',
                 signal: abortController.signal

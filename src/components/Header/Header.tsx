@@ -4,8 +4,11 @@ import React from "react";
 
 import AppIcon from "@assets/60083e92-e923-4d81-9a70-0be5d11bb749.png";
 import Strings from "@res/strings";
+import {useNavigation} from "@react-navigation/native";
+import {Button} from "@rneui/base";
 
 export const Header = ({onMenuPress}) => {
+    const navigation = useNavigation();
     return (
         <ThemedHeader
             containerStyle={{
@@ -39,7 +42,11 @@ export const Header = ({onMenuPress}) => {
                     width: 60,
                 }}>
                     {/*<IconComponent style={{height: 50}} name={"notifications"}/>*/}
-                    <IconComponent style={{height: 50}} onPress={onMenuPress} name={"menu"}/>
+                    <Button style={{height: 50}} color={"transparent"} onPress={() => {
+                        navigation.navigate("CreateNewChat");
+                    }} icon={<IconComponent style={{height: 50}} name={"add"}/>}/>
+                    <Button style={{height: 50}} color={"transparent"} onPress={onMenuPress}
+                            icon={<IconComponent style={{height: 50}} name={"menu"}/>}/>
                 </View>
             }
         />

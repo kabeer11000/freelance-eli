@@ -10,10 +10,15 @@ import {IChat} from "../../../Types";
 import Spinner from "../Spinner";
 
 type IOnItemPress = (chat: IChat, e: GestureResponderEvent) => void | Promise<any>;
-const ChatList = ({chats, onItemPress}: { onItemPress: IOnItemPress, chats: Array<IChat> | null | undefined }) => {
+const ChatList = ({
+                      chats,
+                      onItemPress,
+                      refreshControl
+                  }: { onItemPress: IOnItemPress, chats: Array<IChat> | null | undefined }) => {
     const {Auth} = React.useContext(AuthContext);
+    console.log(Auth?.team_members, chats?.[0].users, Auth && chats?.length ? Object.keys(chats?.[0]?.users).filter(a => a).map(_id => Auth?.team_members.find(({id}: { id: string }) => id === _id)).filter(a => a) : null)
     return (
-        <ScrollView nestedScrollEnabled style={{flexGrow: 1}}>
+        <ScrollView refreshControl={refreshControl} nestedScrollEnabled style={{flexGrow: 1}}>
             {chats?.length && Auth ? chats.map(chat => {
                 const users = Object.keys(chat.users).filter(a => a).map(_id => Auth.team_members.find(({id}: { id: string }) => id === _id)).filter(a => a);
                 if (!users.length) return null

@@ -9,6 +9,7 @@ import {
     Image,
     StyleSheet,
     Text,
+    TouchableHighlight,
     TouchableWithoutFeedback,
     View
 } from "react-native";
@@ -21,6 +22,7 @@ import {pickImageAsync, takePictureAsync} from "./mediaUtils";
 import {Spring} from "../Animations/Spring";
 import * as FileSystem from 'expo-file-system';
 import EndPoints from "../../api/EndPoints";
+import {StatusBar} from "expo-status-bar";
 
 
 export function ConversationView({navigation, route}) {
@@ -37,7 +39,7 @@ export function ConversationView({navigation, route}) {
     useEffect(() => {
         if (!Auth?.status || !chat?.status) return;
         const users = ResolveUsers(Auth, Object.keys(chat.data.users)) || [];
-        const messages = chat.data.messages.map(message => {
+        const messages = chat.data.messages.map((message, index) => {
             /** remove chat message user id  **/
             const user = users.find(({id}) => id === Object.keys(chat.data.users)[0]) || {
                 id: "unknown",
@@ -56,6 +58,9 @@ export function ConversationView({navigation, route}) {
                     name: Auth.user_name,
                     avatar: user.profile_image,
                 },
+                extraData: {
+                    index: index
+                }
             })
         }).reverse();
         setState({...state, users, formattedMessages: messages});
@@ -63,22 +68,24 @@ export function ConversationView({navigation, route}) {
     const [editDialog, setEditDialog] = useState({
         editing: false,
         opened: false,
-        message: null
+        message: null,
+        index: null
     });
-    const ThemedBubble = memo(props => (
+    const ThemedBubble = memo((props) => (
             <Bubble
                 {...props}
                 onLongPress={async () => {
+                    console.log(props.currentMessage.extraData)
                     setEditDialog({
                         ...editDialog,
                         opened: true,
-                        editing: true,
-                        message: props.currentMessage
+                        message: props.currentMessage,
+                        index: props.currentMessage.extraData.index
                     });
                 }}
                 textStyle={{color: "white"}}
                 wrapperStyle={{left: {backgroundColor: Colors.tertiary}}}
-            />
+            /> // (editDialog?.index !== props.currentMessage.extraData.index) && !editDialog.editing ?
         )
     );
     const DiscardMessageEditing = () => {
@@ -97,9 +104,9 @@ export function ConversationView({navigation, route}) {
         return true
     }
     return (
-        <View>
+        <React.Fragment>
             {
-                Auth && chat?.status ? <View>
+                Auth && chat?.status ? <View style={{flex: 1}}>
                     <View style={{
                         backgroundColor: Colors.white,
                         width: "100%",
@@ -111,10 +118,9 @@ export function ConversationView({navigation, route}) {
                         elevation: 5,
                         ...styles.rowFlex,
                     }}>
-                        <View style={{...styles.rowFlex, width: "50%",}}>
+                        <View style={{...styles.rowFlex, width: "50%", justifyContent: "space-between"}}>
                             <Button onPress={() => navigation.goBack()} icon={{name: "arrow-back"}} containerStyle={{
-                                width: 50, height: 50,
-                                marginRight: 20, backgroundColor: "transparent"
+                                width: 50, height: 50, backgroundColor: "transparent"
                             }} color={"transparent"}/>
                             {state.users.filter((user: {
                                 "id": string,
@@ -123,10 +129,10 @@ export function ConversationView({navigation, route}) {
                                 "profile_image": string
                             }) => user.id !== Auth.id).map((user, index) => (
                                 <Avatar key={index} rounded
-                                        containerStyle={{marginLeft: -10, borderWidth: 1, borderColor: "black"}}
+                                        containerStyle={{borderWidth: 1, borderColor: "black"}}
                                         source={{uri: user.profile_image}}/>
                             ))}
-                            <View style={{...styles.rowFlex, marginLeft: 20}}>
+                            <View style={{...styles.rowFlex,}}>
                                 {state.users.filter((user: {
                                     "id": string,
                                     "user_name": string,
@@ -159,6 +165,7 @@ export function ConversationView({navigation, route}) {
                         </View>
                     </View>
                     <GiftedChat
+                        scrollToBottom={true}
                         messagesContainerStyle={{marginTop: 25, paddingBottom: 25}}
                         renderUsernameOnMessage={true}
                         disableComposer={state.working}
@@ -187,24 +194,26 @@ export function ConversationView({navigation, route}) {
                             setState({...state, working: true});
                             messages[messages.length - (1)] = {
                                 ...messages[messages.length - (1)],
-                                image: state.image?.uri
+                                image: state.image?.uri,
+                                extraData: {index: messages.length}
                             };
-                            if (editDialog.editing) {
-                                const a = state.formattedMessages[state.formattedMessages.findIndex(message => message.id === messages[messages.length - (1)].id)] = messages[messages.length - (1)];
-                                setState(a);
-                                giftedChatRef.current.scrollToBottom();
-                                return;
-                            } else {
-                                setState({
-                                    ...state,
-                                    formattedMessages: GiftedChat.append(state.formattedMessages, messages),
-                                    image: null,
-                                    text: "",
-                                    working: false
-                                });
-                                giftedChatRef.current.scrollToBottom();
-                                await SendMessage(state.text, state.image);
-                            }
+                            // if (editDialog.editing) {
+                            //     console.log(messages[messages.length - (1)]);
+                            //     const a = state.formattedMessages[state.formattedMessages.findIndex(message => message.id === messages[messages.length - (1)].id)] = messages[messages.length - (1)];
+                            //     setState({...state, formattedMessages: a, image: null, text: "", working: false});
+                            //     giftedChatRef.current.scrollToBottom();
+                            //     return;
+                            // } else {
+                            setState({
+                                ...state,
+                                formattedMessages: GiftedChat.append(state.formattedMessages, messages),
+                                image: null,
+                                text: "",
+                                working: false
+                            });
+                            giftedChatRef.current.scrollToBottom();
+                            await SendMessage(state.text, state.image).then(console.log);
+                            // }
                         }}
                         user={{_id: Auth.id, name: Auth.user_name}}
                     />
@@ -216,7 +225,7 @@ export function ConversationView({navigation, route}) {
                             borderTopLeftRadius: 15,
                             paddingVertical: 20
                         }}>
-                            <ListItem onPress={async () => {
+                            <TouchableHighlight><ListItem disabled onPress={async () => {
                                 setEditDialog({...editDialog, loading: true});
                                 const d = editDialog.message.image ? (editDialog.message.image.slice(0, 4) === "file" ? await FileSystem.getInfoAsync(editDialog.message.image) : await FileSystem.downloadAsync(editDialog.message.image, FileSystem.documentDirectory + editDialog.message.image.split("/").pop())) : null;
                                 setState({...state, image: d, text: editDialog.message.text});
@@ -228,16 +237,17 @@ export function ConversationView({navigation, route}) {
                                         <ActivityIndicator/> : "Edit Message"}</ListItem.Title>
                                 </ListItem.Content>
                             </ListItem>
+                            </TouchableHighlight>
                             <ListItem onPress={async () => {
                                 // TODO Delete Message Logic: DONE
                                 await fetch(EndPoints.DeleteMessage({
                                     token: Auth.token,
-                                    time: chat.data.messages[state.formattedMessages.findIndex(m => m.id === editDialog.message.id)].time,
+                                    time: chat.data.messages[editDialog.message.extraData.index].time,
                                     _id: chat.data._id
                                 }))
                                 setState({
                                     ...state,
-                                    formattedMessages: state.formattedMessages.filter(m => m.id !== editDialog.message.id)
+                                    formattedMessages: state.formattedMessages.filter((_, index) => index !== editDialog.message.extraData.index)
                                 });
                             }}>
                                 <ListItem.Content>
@@ -274,7 +284,8 @@ export function ConversationView({navigation, route}) {
                         : null}
                 </View> : <Spinner relative={true}/>
             }
-        </View>
+            <StatusBar style={"dark"}/>
+        </React.Fragment>
     )
 }
 

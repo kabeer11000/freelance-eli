@@ -12,6 +12,7 @@ import {createTheme, ThemeProvider} from "@rneui/themed";
 import VideoSDKWebView from "./src/components/VideoSDKWebView/VideoSDKWebView";
 import Search from "./src/views/Search/Search";
 import {Logs} from "expo";
+import CreateNewChat from "./src/components/CreateNewChat/CreateNewChat";
 
 
 Logs.enableExpoCliLogging();
@@ -27,6 +28,7 @@ const AuthenticatedNavigator = () => {
                     <Stack.Screen name={"Chat"} component={Chat}/>
                     <Stack.Screen name={"Search"} component={Search}/>
                     <Stack.Screen name={"VideoSDKWebView"} component={VideoSDKWebView}/>
+                    <Stack.Screen name={"CreateNewChat"} component={CreateNewChat}/>
                     <Stack.Screen name={"Login"} component={Login}/>
                 </>
             ) : (

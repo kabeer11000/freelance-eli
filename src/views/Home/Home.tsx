@@ -16,6 +16,7 @@ import Strings from "@res/strings";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import AppHeader from "@components/Header/Header"
 import {SceneMap, TabBar, TabView} from 'react-native-tab-view';
+import {StatusBar} from "expo-status-bar";
 
 const HomeHeader = () => {
 }
@@ -92,6 +93,8 @@ const Home = ({navigation}) => {
                     </ListItem>
                 </View>
             </BottomSheet>
+
+            <StatusBar style={"dark"}/>
         </View>
     );
 }
